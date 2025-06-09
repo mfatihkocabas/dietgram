@@ -381,7 +381,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           _buildInputField(
             controller: _emailController,
             label: localization.getString('loginEmail'),
-            hint: 'example@domain.com',
+            hint: localization.getString('loginEmailHint') ?? 'example@domain.com',
             prefixIcon: Icons.email_rounded,
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
@@ -401,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           _buildInputField(
             controller: _passwordController,
             label: localization.getString('loginPassword'),
-            hint: '••••••••',
+            hint: localization.getString('loginPasswordHint') ?? '••••••••',
             prefixIcon: Icons.lock_rounded,
             obscureText: _obscurePassword,
             suffixIcon: IconButton(
@@ -780,7 +780,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Password reset email sent! Check your inbox.',
+                  localization.getString('resetPasswordSuccess') ?? 'Password reset email sent! Check your inbox.',
                   style: GoogleFonts.epilogue(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -835,7 +835,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(
-        'Reset Password',
+        localization.getString('resetPasswordTitle') ?? 'Reset Password',
         style: GoogleFonts.epilogue(
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -849,7 +849,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Enter your email address and we\'ll send you a link to reset your password.',
+              localization.getString('resetPasswordDescription') ?? 'Enter your email address and we\'ll send you a link to reset your password.',
               style: GoogleFonts.epilogue(
                 fontSize: 14,
                 color: AppColors.textMedium,
@@ -866,7 +866,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
               ),
               decoration: InputDecoration(
                 labelText: localization.getString('loginEmail'),
-                hintText: 'example@domain.com',
+                hintText: localization.getString('loginEmailHint') ?? 'example@domain.com',
                 labelStyle: GoogleFonts.epilogue(
                   color: AppColors.textMedium,
                   fontSize: 14,
@@ -923,7 +923,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            'Cancel',
+            localization.getString('cancel') ?? 'Cancel',
             style: GoogleFonts.epilogue(
               fontSize: 14,
               color: AppColors.textMedium,
@@ -949,7 +949,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
                   ),
                 )
               : Text(
-                  'Send Reset Email',
+                  localization.getString('sendResetEmail') ?? 'Send Reset Email',
                   style: GoogleFonts.epilogue(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
