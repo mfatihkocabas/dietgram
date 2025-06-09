@@ -1,33 +1,52 @@
 {
   "@@locale": "tr",
   "appName": "Diyetgram",
-  "appTitle": "Diyetgram - Diyet Takipçisi",
+  "appTitle": "Diyetgram - Diyet Takibi",
   
   "onboardingWelcome": "Diyetgram'a Hoş Geldiniz",
-  "onboardingSubtitle": "Daha sağlıklı bir yaşam tarzı için AI destekli beslenme yardımcınız",
-  "onboardingGetStarted": "Başlayalım",
+  "onboardingSubtitle": "Daha sağlıklı bir yaşam için AI destekli beslenme yardımcınız",
+  "onboardingGetStarted": "Başlayın",
   "onboardingSkip": "Geç",
   
   "loginTitle": "Giriş Yap",
-  "loginSubtitle": "Sağlıklı yolculuğuna devam et",
-  "loginEmail": "E-posta",
+  "loginWelcome": "Tekrar Hoş Geldiniz!",
+  "loginSubtitle": "Sağlıklı yolculuğunuza devam etmek için giriş yapın",
+  "loginEmail": "E-posta Adresi",
   "loginPassword": "Şifre",
   "loginSignIn": "Giriş Yap",
   "loginSignUp": "Kayıt Ol",
   "loginForgotPassword": "Şifremi Unuttum?",
   "loginNoAccount": "Hesabınız yok mu?",
-  "loginHaveAccount": "Zaten bir hesabınız var mı?",
+  "loginHaveAccount": "Zaten hesabınız var mı?",
+  "forgotPassword": "Şifremi Unuttum?",
+  "dontHaveAccount": "Hesabınız yok mu?",
+  "alreadyHaveAccount": "Zaten hesabınız var mı?",
+  "signUpLink": "Kayıt Ol",
+  "signInLink": "Giriş Yap",
+  
+  "signUpTitle": "Hesap Oluştur",
+  "signUpSubtitle": "Sağlık yolculuğundaki binlerce kişiye katılın",
+  "signUpButton": "Hesap Oluştur",
+  
+  "emailRequired": "E-posta gereklidir",
+  "emailInvalid": "Geçerli bir e-posta girin",
+  "passwordRequired": "Şifre gereklidir",
+  "passwordTooShort": "Şifre en az 6 karakter olmalı",
+  
+  "loginOr": "veya",
+  "loginContinueAsGuest": "Misafir olarak devam et",
+  "loginGuestSubtitle": "Hesap oluşturmadan uygulamayı deneyimleyin",
   
   "dashboardGoodMorning": "Günaydın!",
-  "dashboardTrackMeals": "Bugünkü öğünlerinizi takip edin",
+  "dashboardTrackMeals": "Bugün öğünlerinizi takip edin",
   "dashboardSelectedDay": "Seçili Gün",
-  "dashboardViewingDay": "Bu günün öğünlerini görüntüleniyor",
+  "dashboardViewingDay": "Bu gün için öğünleri görüntülüyorsunuz",
   "dashboardDailyProgress": "Günlük İlerleme",
   "dashboardMealBreakdown": "Öğün Dağılımı",
   "dashboardTimeline": "Zaman Çizelgesi",
   "dashboardViewCalendar": "Takvimi Görüntüle",
   "dashboardStartJourney": "Yolculuğunuza Başlayın",
-  "dashboardTrackNutrition": "Beslenmenizi takip edin, yeni tarifler keşfedin ve AI destekli içgörülerle sağlık hedeflerinize ulaşın",
+  "dashboardTrackNutrition": "Beslenmenizi takip edin, yeni tarifler keşfedin ve AI destekli öngörülerle sağlık hedeflerinize ulaşın",
   "dashboardAddMeal": "Öğün Ekle",
   "dashboardAIMenu": "AI Menü",
   
@@ -38,10 +57,35 @@
   
   "addToDiary": "Günlüğe Ekle",
   "selectMealType": "Öğün türünü seçin",
-  "chooseMealFor": "{date} tarihi için hangi öğünü eklemek istediğinizi seçin",
+  "chooseMealFor": "{date} için hangi öğünü ekleyeceğinizi seçin",
+  "@chooseMealFor": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   
-  "calories": "{count} kalori",
+  "calories": "{count} kal",
+  "@calories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
   "caloriesOf": "{current} / {total} kalori",
+  "@caloriesOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   
   "profileEditProfile": "Profili Düzenle",
   "profileGoalsTargets": "Hedefler ve Amaçlar",
@@ -68,6 +112,13 @@
   
   "calorieWarningTitle": "Kalori Sınırı Uyarısı",
   "calorieWarningMessage": "Bu öğünü eklemek {mealType} için önerilen kalori sınırını aşacak.",
+  "@calorieWarningMessage": {
+    "placeholders": {
+      "mealType": {
+        "type": "String"
+      }
+    }
+  },
   "calorieWarningAddAnyway": "Yine de Ekle",
   "calorieWarningCancel": "İptal",
   

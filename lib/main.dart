@@ -3,6 +3,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+// TODO: Re-enable Firebase when it's properly configured
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'firebase_options.dart';
 import 'services/localization_service.dart';
 import 'providers/meal_provider.dart';
 import 'providers/calendar_provider.dart';
@@ -15,6 +19,17 @@ import 'utils/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // TODO: Re-enable Firebase initialization
+  // try {
+  //   // Initialize Firebase
+  //   await Firebase.initializeApp(
+  //     options: DefaultFirebaseOptions.currentPlatform,
+  //   );
+  // } catch (e) {
+  //   print('Firebase initialization error: $e');
+  //   // Continue without Firebase for development
+  // }
   
   // Initialize Hive for caching
   await Hive.initFlutter();
@@ -108,7 +123,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Simple authentication service
+// Mock Authentication service (temporary - will be replaced with Firebase)
 class AuthService extends ChangeNotifier {
   bool _isLoggedIn = false;
   String? _userEmail;
@@ -117,7 +132,45 @@ class AuthService extends ChangeNotifier {
   String? get userEmail => _userEmail;
 
   Future<void> signIn(String email, String password) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    // Mock validation
+    if (email.isEmpty || password.isEmpty) {
+      throw Exception('Please fill all fields');
+    }
+    
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      throw Exception('Please enter a valid email address');
+    }
+    
+    if (password.length < 6) {
+      throw Exception('Password must be at least 6 characters');
+    }
+    
+    _isLoggedIn = true;
+    _userEmail = email;
+    notifyListeners();
+  }
+
+  Future<void> signUp(String email, String password) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 1200));
+    
+    // Mock validation
+    if (email.isEmpty || password.isEmpty) {
+      throw Exception('Please fill all fields');
+    }
+    
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      throw Exception('Please enter a valid email address');
+    }
+    
+    if (password.length < 6) {
+      throw Exception('Password must be at least 6 characters');
+    }
+    
+    // Simulate account creation
     _isLoggedIn = true;
     _userEmail = email;
     notifyListeners();
@@ -127,6 +180,22 @@ class AuthService extends ChangeNotifier {
     _isLoggedIn = false;
     _userEmail = null;
     notifyListeners();
+  }
+
+  Future<void> resetPassword(String email) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 800));
+    
+    if (email.isEmpty) {
+      throw Exception('Please enter your email address');
+    }
+    
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      throw Exception('Please enter a valid email address');
+    }
+    
+    // Simulate password reset email sent
+    // In real implementation, Firebase would send the email
   }
 }
 
