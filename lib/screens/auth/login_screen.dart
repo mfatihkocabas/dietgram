@@ -771,6 +771,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
       final authService = Provider.of<AuthService>(context, listen: false);
       await authService.resetPassword(_emailController.text.trim());
       
+      final localization = Provider.of<LocalizationService>(context, listen: false);
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

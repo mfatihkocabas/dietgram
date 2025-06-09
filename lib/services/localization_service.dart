@@ -18,6 +18,14 @@ class LocalizationService extends ChangeNotifier {
   // Initialize the service
   Future<void> initialize() async {
     await _loadSavedLanguage();
+    
+    // Immediately set default localizations
+    _localizations['en'] = _getDefaultEnglishLocalizations();
+    _localizations['tr'] = _getDefaultTurkishLocalizations();
+    
+    notifyListeners();
+    
+    // Then try to load from cache in background
     await _loadLocalizations();
   }
   
@@ -100,7 +108,22 @@ class LocalizationService extends ChangeNotifier {
   // Get localized string
   String getString(String key) {
     final languageCode = _currentLocale.languageCode;
-    return _localizations[languageCode]?[key] ?? key;
+    
+    // If localizations not loaded yet, load defaults immediately
+    if (_localizations.isEmpty) {
+      _localizations['en'] = _getDefaultEnglishLocalizations();
+      _localizations['tr'] = _getDefaultTurkishLocalizations();
+    }
+    
+    final localizedString = _localizations[languageCode]?[key];
+    
+    // Try fallback to English if key not found in current language
+    if (localizedString == null) {
+      final fallback = _localizations['en']?[key];
+      return fallback ?? key;
+    }
+    
+    return localizedString;
   }
   
   // Get localized string with parameters
