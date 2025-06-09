@@ -5,6 +5,7 @@ import '../utils/app_colors.dart';
 import '../providers/meal_provider.dart';
 import '../providers/calendar_provider.dart';
 import '../models/meal.dart';
+import '../main.dart'; // AuthService için
 
 class AddToDiaryScreen extends StatefulWidget {
   const AddToDiaryScreen({super.key});
@@ -143,6 +144,11 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.red),
+            onPressed: () => _showLogoutDialog(context),
+            tooltip: 'Logout',
+          ),
           Container(
             margin: const EdgeInsets.all(8),
             child: ElevatedButton(
@@ -554,9 +560,10 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     final meal = Meal(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: option['name'],
-      type: selectedMealType!,
-      calories: option['calories'],
-      timestamp: selectedDate,
+      mealType: selectedMealType!,
+      calories: option['calories'].toDouble(),
+      date: selectedDate,
+      createdAt: DateTime.now(),
       description: option['description'],
       ingredients: List<String>.from(option['ingredients']),
     );
@@ -626,5 +633,46 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return '${months[date.month - 1]} ${date.day}';
     }
+  }
+  
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Logout',
+          style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.epilogue(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.epilogue(color: AppColors.textMedium),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog first
+              // Use AuthService to logout
+              final authService = Provider.of<AuthService>(context, listen: false);
+              await authService.signOut();
+              // AuthWrapper will automatically navigate to login screen
+            },
+            child: Text(
+              'Logout',
+              style: GoogleFonts.epilogue(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 

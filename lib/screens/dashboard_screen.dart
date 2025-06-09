@@ -5,6 +5,7 @@ import '../utils/app_colors.dart';
 import '../providers/meal_provider.dart';
 import '../providers/calendar_provider.dart';
 import '../models/meal.dart';
+import '../main.dart'; // AuthService için
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -192,6 +193,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  isToday ? Icons.today : Icons.calendar_today,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Logout button
+              GestureDetector(
+                onTap: () => _showLogoutDialog(context),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.red.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.logout,
+                    color: Colors.red,
+                    size: 20,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1381,6 +1416,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(12),
         ),
         tileColor: AppColors.lightGray.withOpacity(0.3),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Logout',
+          style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.epilogue(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.epilogue(color: AppColors.textMedium),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog first
+              // Use AuthService to logout
+              final authService = Provider.of<AuthService>(context, listen: false);
+              await authService.signOut();
+              // AuthWrapper will automatically navigate to login screen
+            },
+            child: Text(
+              'Logout',
+              style: GoogleFonts.epilogue(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

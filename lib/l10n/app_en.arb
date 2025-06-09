@@ -1,0 +1,109 @@
+{
+  "@@locale": "en",
+  "appName": "Dietgram",
+  "appTitle": "Dietgram - Diet Tracker",
+  
+  "onboardingWelcome": "Welcome to Dietgram",
+  "onboardingSubtitle": "Your AI-powered nutrition companion for a healthier lifestyle",
+  "onboardingGetStarted": "Get Started",
+  "onboardingSkip": "Skip",
+  
+  "loginTitle": "Sign In",
+  "loginSubtitle": "Continue your healthy journey",
+  "loginEmail": "Email",
+  "loginPassword": "Password",
+  "loginSignIn": "Sign In",
+  "loginSignUp": "Sign Up",
+  "loginForgotPassword": "Forgot Password?",
+  "loginNoAccount": "Don't have an account?",
+  "loginHaveAccount": "Already have an account?",
+  
+  "dashboardGoodMorning": "Good Morning!",
+  "dashboardTrackMeals": "Track your meals today",
+  "dashboardSelectedDay": "Selected Day",
+  "dashboardViewingDay": "Viewing meals for this day",
+  "dashboardDailyProgress": "Daily Progress",
+  "dashboardMealBreakdown": "Meal Breakdown",
+  "dashboardTimeline": "Timeline",
+  "dashboardViewCalendar": "View Calendar",
+  "dashboardStartJourney": "Start Your Journey",
+  "dashboardTrackNutrition": "Track your nutrition, discover new recipes, and achieve your health goals with AI-powered insights",
+  "dashboardAddMeal": "Add Meal",
+  "dashboardAIMenu": "AI Menu",
+  
+  "mealBreakfast": "Breakfast",
+  "mealLunch": "Lunch",
+  "mealDinner": "Dinner",
+  "mealSnack": "Snack",
+  
+  "addToDiary": "Add to Diary",
+  "selectMealType": "Select meal type",
+  "chooseMealFor": "Choose which meal to add to {date}",
+  "@chooseMealFor": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "calories": "{count} cal",
+  "@calories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "caloriesOf": "{current} of {total} calories",
+  "@caloriesOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "profileEditProfile": "Edit Profile",
+  "profileGoalsTargets": "Goals & Targets",
+  "profileNotifications": "Notifications",
+  "profileHelp": "Help & Support",
+  "profileAbout": "About",
+  
+  "navigationHome": "Home",
+  "navigationCalendar": "Calendar",
+  "navigationProfile": "Profile",
+  "navigationExit": "Exit",
+  
+  "dateToday": "Today",
+  "dateTomorrow": "Tomorrow",
+  "dateYesterday": "Yesterday",
+  
+  "errorNetwork": "Network error. Please check your connection.",
+  "errorGeneral": "Something went wrong. Please try again.",
+  "loadingPleaseWait": "Please wait...",
+  
+  "aiSuggestionsTitle": "AI Menu Suggestions",
+  "aiSuggestionApply": "Apply Menu",
+  "aiSuggestionApplied": "AI suggestion applied successfully!",
+  
+  "calorieWarningTitle": "Calorie Limit Warning",
+  "calorieWarningMessage": "Adding this meal will exceed the recommended calorie limit for {mealType}.",
+  "@calorieWarningMessage": {
+    "placeholders": {
+      "mealType": {
+        "type": "String"
+      }
+    }
+  },
+  "calorieWarningAddAnyway": "Add Anyway",
+  "calorieWarningCancel": "Cancel",
+  
+  "settingsLanguage": "Language",
+  "settingsEnglish": "English",
+  "settingsTurkish": "Turkish"
+} 

@@ -6,6 +6,7 @@ import '../providers/calendar_provider.dart';
 import '../models/daily_meal_plan.dart';
 import '../models/ai_menu_suggestion.dart';
 import '../utils/app_colors.dart';
+import '../main.dart'; // AuthService için
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -42,6 +43,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.red),
+            onPressed: () => _showLogoutDialog(context),
+            tooltip: 'Logout',
+          ),
           Container(
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.all(8),
@@ -669,6 +675,47 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Text(
                 "Apply to Selected Day",
                 style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Logout",
+          style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          "Are you sure you want to logout?",
+          style: GoogleFonts.epilogue(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: GoogleFonts.epilogue(color: AppColors.textMedium),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog first
+              // Use AuthService to logout
+              final authService = Provider.of<AuthService>(context, listen: false);
+              await authService.signOut();
+              // AuthWrapper will automatically navigate to login screen
+            },
+            child: Text(
+              "Logout",
+              style: GoogleFonts.epilogue(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

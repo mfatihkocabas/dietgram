@@ -1,0 +1,77 @@
+{
+  "@@locale": "tr",
+  "appName": "Diyetgram",
+  "appTitle": "Diyetgram - Diyet Takipçisi",
+  
+  "onboardingWelcome": "Diyetgram'a Hoş Geldiniz",
+  "onboardingSubtitle": "Daha sağlıklı bir yaşam tarzı için AI destekli beslenme yardımcınız",
+  "onboardingGetStarted": "Başlayalım",
+  "onboardingSkip": "Geç",
+  
+  "loginTitle": "Giriş Yap",
+  "loginSubtitle": "Sağlıklı yolculuğuna devam et",
+  "loginEmail": "E-posta",
+  "loginPassword": "Şifre",
+  "loginSignIn": "Giriş Yap",
+  "loginSignUp": "Kayıt Ol",
+  "loginForgotPassword": "Şifremi Unuttum?",
+  "loginNoAccount": "Hesabınız yok mu?",
+  "loginHaveAccount": "Zaten bir hesabınız var mı?",
+  
+  "dashboardGoodMorning": "Günaydın!",
+  "dashboardTrackMeals": "Bugünkü öğünlerinizi takip edin",
+  "dashboardSelectedDay": "Seçili Gün",
+  "dashboardViewingDay": "Bu günün öğünlerini görüntüleniyor",
+  "dashboardDailyProgress": "Günlük İlerleme",
+  "dashboardMealBreakdown": "Öğün Dağılımı",
+  "dashboardTimeline": "Zaman Çizelgesi",
+  "dashboardViewCalendar": "Takvimi Görüntüle",
+  "dashboardStartJourney": "Yolculuğunuza Başlayın",
+  "dashboardTrackNutrition": "Beslenmenizi takip edin, yeni tarifler keşfedin ve AI destekli içgörülerle sağlık hedeflerinize ulaşın",
+  "dashboardAddMeal": "Öğün Ekle",
+  "dashboardAIMenu": "AI Menü",
+  
+  "mealBreakfast": "Kahvaltı",
+  "mealLunch": "Öğle Yemeği",
+  "mealDinner": "Akşam Yemeği",
+  "mealSnack": "Atıştırmalık",
+  
+  "addToDiary": "Günlüğe Ekle",
+  "selectMealType": "Öğün türünü seçin",
+  "chooseMealFor": "{date} tarihi için hangi öğünü eklemek istediğinizi seçin",
+  
+  "calories": "{count} kalori",
+  "caloriesOf": "{current} / {total} kalori",
+  
+  "profileEditProfile": "Profili Düzenle",
+  "profileGoalsTargets": "Hedefler ve Amaçlar",
+  "profileNotifications": "Bildirimler",
+  "profileHelp": "Yardım ve Destek",
+  "profileAbout": "Hakkında",
+  
+  "navigationHome": "Ana Sayfa",
+  "navigationCalendar": "Takvim",
+  "navigationProfile": "Profil",
+  "navigationExit": "Çıkış",
+  
+  "dateToday": "Bugün",
+  "dateTomorrow": "Yarın",
+  "dateYesterday": "Dün",
+  
+  "errorNetwork": "Ağ hatası. Lütfen bağlantınızı kontrol edin.",
+  "errorGeneral": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+  "loadingPleaseWait": "Lütfen bekleyin...",
+  
+  "aiSuggestionsTitle": "AI Menü Önerileri",
+  "aiSuggestionApply": "Menüyü Uygula",
+  "aiSuggestionApplied": "AI önerisi başarıyla uygulandı!",
+  
+  "calorieWarningTitle": "Kalori Sınırı Uyarısı",
+  "calorieWarningMessage": "Bu öğünü eklemek {mealType} için önerilen kalori sınırını aşacak.",
+  "calorieWarningAddAnyway": "Yine de Ekle",
+  "calorieWarningCancel": "İptal",
+  
+  "settingsLanguage": "Dil",
+  "settingsEnglish": "İngilizce",
+  "settingsTurkish": "Türkçe"
+} 

@@ -1,0 +1,57 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <rect width="1024" height="1024" rx="180" fill="url(#gradient1)"/>
+  
+  <!-- Main circle background -->
+  <circle cx="512" cy="512" r="380" fill="url(#gradient2)" opacity="0.1"/>
+  
+  <!-- Plate/Bowl shape -->
+  <circle cx="512" cy="480" r="280" fill="#FFFFFF" stroke="url(#gradient3)" stroke-width="8"/>
+  
+  <!-- Food items on the plate -->
+  <!-- Salad leaves -->
+  <ellipse cx="450" cy="420" rx="40" ry="25" fill="#4CAF50" opacity="0.8"/>
+  <ellipse cx="480" cy="445" rx="35" ry="20" fill="#66BB6A" opacity="0.8"/>
+  <ellipse cx="420" cy="460" rx="30" ry="18" fill="#4CAF50" opacity="0.8"/>
+  
+  <!-- Vegetables -->
+  <circle cx="560" cy="430" r="25" fill="#FF5722" opacity="0.8"/>
+  <circle cx="550" cy="470" r="20" fill="#FF7043" opacity="0.8"/>
+  <circle cx="580" cy="450" r="15" fill="#FF8A65" opacity="0.8"/>
+  
+  <!-- Protein -->
+  <ellipse cx="500" cy="520" rx="35" ry="20" fill="#FFC107" opacity="0.8"/>
+  <ellipse cx="470" cy="540" rx="30" ry="18" fill="#FFD54F" opacity="0.8"/>
+  
+  <!-- Carbs -->
+  <rect x="530" y="510" width="30" height="15" rx="7" fill="#795548" opacity="0.8"/>
+  <rect x="540" y="530" width="25" height="12" rx="6" fill="#8D6E63" opacity="0.8"/>
+  
+  <!-- App name in modern typography -->
+  <text x="512" y="820" text-anchor="middle" fill="#FFFFFF" font-family="SF Pro Display, -apple-system, Arial" font-size="72" font-weight="700">Diyetgram</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="300" cy="280" r="8" fill="#4CAF50" opacity="0.3"/>
+  <circle cx="720" cy="320" r="12" fill="#FF5722" opacity="0.3"/>
+  <circle cx="250" cy="700" r="10" fill="#FFC107" opacity="0.3"/>
+  <circle cx="780" cy="680" r="6" fill="#2196F3" opacity="0.3"/>
+  
+  <!-- Gradient definitions -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2196F3"/>
+      <stop offset="50%" stop-color="#1976D2"/>
+      <stop offset="100%" stop-color="#0D47A1"/>
+    </linearGradient>
+    
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E3F2FD"/>
+    </linearGradient>
+    
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2196F3"/>
+      <stop offset="100%" stop-color="#1976D2"/>
+    </linearGradient>
+  </defs>
+</svg> 

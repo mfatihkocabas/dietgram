@@ -1,5 +1,5 @@
-name: diyetgram
-description: "A minimalist approach to diet tracking"
+name: dietgram
+description: "A new Flutter project."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,21 +10,49 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.6
+  flutter_localizations:
+    sdk: flutter
   google_fonts: ^6.1.0
-  provider: ^6.1.1
-  shared_preferences: ^2.2.2
-  intl: ^0.19.0
+  provider: ^6.0.5
+  intl: ^0.18.1
   table_calendar: ^3.0.9
-  uuid: ^4.2.1
+  
+  # Firebase (geçici olarak kapalı - simulator test için)
+  # firebase_core: ^2.24.2
+  # firebase_auth: ^4.15.3
+  # cloud_firestore: ^4.13.6
+  
+  # Caching
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Network & HTTP
+  connectivity_plus: ^5.0.2
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#4CAF50"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
 
 flutter:
   uses-material-design: true
-  
+  generate: true
   assets:
-    - assets/images/ 
+    - assets/
+    - assets/icon/
+  
+flutter_intl:
+  enabled: true 

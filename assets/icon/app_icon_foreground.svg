@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="plateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F5F5F5"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main plate/bowl -->
+  <circle cx="512" cy="512" r="250" fill="url(#plateGradient)" stroke="#1976D2" stroke-width="6"/>
+  
+  <!-- Fresh vegetables and healthy foods -->
+  <!-- Green leafy vegetables -->
+  <ellipse cx="450" cy="440" rx="40" ry="25" fill="#4CAF50" opacity="0.9"/>
+  <ellipse cx="480" cy="470" rx="35" ry="20" fill="#66BB6A" opacity="0.9"/>
+  <ellipse cx="430" cy="490" rx="30" ry="18" fill="#4CAF50" opacity="0.9"/>
+  
+  <!-- Red vegetables/fruits -->
+  <circle cx="580" cy="450" r="25" fill="#F44336"/>
+  <circle cx="570" cy="490" r="22" fill="#FF5722"/>
+  <circle cx="600" cy="480" r="18" fill="#FF7043"/>
+  
+  <!-- Orange vegetables -->
+  <ellipse cx="490" cy="420" rx="22" ry="13" fill="#FF9800" opacity="0.9"/>
+  <ellipse cx="470" cy="435" rx="18" ry="10" fill="#FFB74D" opacity="0.9"/>
+  
+  <!-- Yellow protein/grains -->
+  <ellipse cx="530" cy="560" rx="35" ry="22" fill="#FFC107"/>
+  <ellipse cx="500" cy="580" rx="30" ry="18" fill="#FFD54F"/>
+  
+  <!-- Purple vegetables -->
+  <circle cx="550" cy="460" r="16" fill="#9C27B0" opacity="0.8"/>
+  <circle cx="540" cy="485" r="13" fill="#BA68C8" opacity="0.8"/>
+  
+  <!-- Brown grains/nuts -->
+  <rect x="560" y="550" width="25" height="15" rx="7" fill="#795548"/>
+  <rect x="570" y="570" width="20" height="12" rx="6" fill="#8D6E63"/>
+</svg> 
