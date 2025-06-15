@@ -42,26 +42,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
             color: AppColors.textDark,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.red),
-            onPressed: () => _showLogoutDialog(context),
-            tooltip: 'Logout',
-          ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.lightGray,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.calendar_today,
-              color: AppColors.primary,
-              size: 24,
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Consumer<CalendarProvider>(
@@ -683,44 +663,5 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          "Logout",
-          style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
-        ),
-        content: Text(
-          "Are you sure you want to logout?",
-          style: GoogleFonts.epilogue(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: GoogleFonts.epilogue(color: AppColors.textMedium),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close dialog first
-              // Use AuthService to logout
-              final authService = Provider.of<AuthService>(context, listen: false);
-              await authService.signOut();
-              // AuthWrapper will automatically navigate to login screen
-            },
-            child: Text(
-              "Logout",
-              style: GoogleFonts.epilogue(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 } 

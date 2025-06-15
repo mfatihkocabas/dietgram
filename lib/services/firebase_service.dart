@@ -1,5 +1,8 @@
+// TODO: Firebase service will be enabled when Firebase is configured
+/*
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/meal.dart';
 import '../models/user_profile.dart';
 
@@ -172,5 +175,25 @@ class FirebaseService {
         .map((doc) => doc.exists 
             ? UserProfile.fromFirestore(doc.data()!)
             : null);
+  }
+}
+*/
+
+// Placeholder class for when Firebase is not configured
+class FirebaseService {
+  static void signInWithEmailAndPassword(String email, String password) {
+    throw UnsupportedError('Firebase is not configured yet');
+  }
+  
+  static void signUpWithEmailAndPassword(String email, String password) {
+    throw UnsupportedError('Firebase is not configured yet');
+  }
+  
+  static void signOut() {
+    throw UnsupportedError('Firebase is not configured yet');
+  }
+  
+  static void resetPassword(String email) {
+    throw UnsupportedError('Firebase is not configured yet');
   }
 } 

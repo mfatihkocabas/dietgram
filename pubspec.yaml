@@ -10,49 +10,45 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.2.1
+  provider: ^6.1.2
+  shared_preferences: ^2.2.3
+  table_calendar: ^3.0.9
+  intl: ^0.18.1
+  connectivity_plus: ^5.0.2
+  path_provider: ^2.1.4
   flutter_localizations:
     sdk: flutter
-  google_fonts: ^6.1.0
-  provider: ^6.0.5
-  intl: ^0.18.1
-  table_calendar: ^3.0.9
-  
-  # Firebase (geçici olarak kapalı - simulator test için)
-  # firebase_core: ^2.24.2
-  # firebase_auth: ^4.15.3
-  # cloud_firestore: ^4.13.6
-  
-  # Caching
-  shared_preferences: ^2.2.2
-  hive: ^2.2.3
+  # Hive for local storage
   hive_flutter: ^1.1.0
-  
-  # Network & HTTP
-  connectivity_plus: ^5.0.2
-  http: ^1.1.0
+  # AdMob for advertisements
+  google_mobile_ads: ^5.1.0
+  # In-app purchases for premium features
+  in_app_purchase: ^3.2.0
+  # URL launcher for email and web links
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  build_runner: ^2.4.9
   flutter_launcher_icons: ^0.13.1
-  hive_generator: ^2.0.1
-  build_runner: ^2.4.7
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/app_icon.png"
+  image_path: "assets/icon/icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#4CAF50"
-  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
 
 flutter:
   uses-material-design: true
   generate: true
+
   assets:
-    - assets/
+    - assets/images/
     - assets/icon/
-  
+
 flutter_intl:
   enabled: true 

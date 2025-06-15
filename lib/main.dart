@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'firebase_options.dart';
 import 'services/localization_service.dart';
+import 'services/ad_service.dart';
+import 'services/premium_service.dart';
 import 'providers/meal_provider.dart';
 import 'providers/calendar_provider.dart';
 import 'screens/auth/login_screen.dart';
@@ -15,6 +17,9 @@ import 'screens/dashboard_screen.dart';
 import 'screens/add_to_diary_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/premium_screen.dart';
+import 'screens/add_custom_meal_screen.dart';
+import 'screens/profile_screen.dart';
 import 'utils/app_colors.dart';
 
 void main() async {
@@ -33,6 +38,9 @@ void main() async {
   
   // Initialize Hive for caching
   await Hive.initFlutter();
+  
+  // Initialize AdMob
+  await AdService.initialize();
   
   runApp(const MyApp());
 }
@@ -55,6 +63,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => CalendarProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PremiumService()..initialize(),
         ),
       ],
       child: Consumer<LocalizationService>(
@@ -115,6 +126,9 @@ class MyApp extends StatelessWidget {
               '/add-to-diary': (context) => const AddToDiaryScreen(),
               '/calendar': (context) => const CalendarScreen(),
               '/onboarding': (context) => const OnboardingScreen(),
+              '/premium': (context) => const PremiumScreen(),
+              '/add_custom_meal': (context) => AddCustomMealScreen(mealType: 'breakfast', selectedDate: DateTime.now()),
+              '/profile': (context) => const ProfileScreen(),
             },
           );
         },

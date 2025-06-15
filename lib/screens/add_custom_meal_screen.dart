@@ -26,7 +26,7 @@ class _AddCustomMealScreenState extends State<AddCustomMealScreen> {
   final _formKey = GlobalKey<FormState>();
   
   bool _isAnalyzing = false;
-  AIFoodEstimate? _nutritionEstimate;
+  NutritionEstimate? _nutritionEstimate;
   final AINutritionService _aiService = AINutritionService();
 
   @override
@@ -48,10 +48,10 @@ class _AddCustomMealScreenState extends State<AddCustomMealScreen> {
     });
 
     try {
-      final estimate = await _aiService.estimateNutrition(_descriptionController.text.trim());
+      final estimate = await _aiService.analyzeFood(_descriptionController.text.trim());
       setState(() {
         _nutritionEstimate = estimate;
-        if (_mealNameController.text.isEmpty) {
+        if (_mealNameController.text.isEmpty && estimate != null) {
           _mealNameController.text = estimate.recognizedFood;
         }
       });

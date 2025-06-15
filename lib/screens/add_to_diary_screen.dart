@@ -8,6 +8,9 @@ import '../models/meal.dart';
 import '../main.dart'; // AuthService için
 import '../services/ai_nutrition_service.dart';
 import '../services/localization_service.dart';
+import '../services/premium_service.dart';
+import '../services/ad_service.dart';
+import '../screens/premium_screen.dart';
 
 class AddToDiaryScreen extends StatefulWidget {
   const AddToDiaryScreen({super.key});
@@ -181,17 +184,21 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           ? _buildMealTypeSelection()
           : _buildMealOptionsGrid(),
       floatingActionButton: selectedMealType != null 
-        ? FloatingActionButton.extended(
-            onPressed: () => _navigateToCustomMeal(),
-            backgroundColor: AppColors.primary,
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: Text(
-              'Kendi Öğününü Ekle',
-              style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
+        ? Consumer<PremiumService>(
+            builder: (context, premiumService, child) {
+              return FloatingActionButton.extended(
+                onPressed: () => _navigateToCustomMeal(premiumService),
+                backgroundColor: AppColors.primary,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text(
+                  'Kendi Öğününü Ekle',
+                  style: GoogleFonts.epilogue(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              );
+            },
           )
         : null,
     );
@@ -475,7 +482,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _addMealToCalendar(option),
+                                            onPressed: () async => await _addMealToCalendar(option),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -496,7 +503,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     );
   }
 
-  void _addMealToCalendar(Map<String, dynamic> option) {
+  Future<void> _addMealToCalendar(Map<String, dynamic> option) async {
     final calendarProvider = Provider.of<CalendarProvider>(context, listen: false);
     
     // Check calorie limits before adding
@@ -552,9 +559,9 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
-                _proceedWithMealAddition(option, calendarProvider);
+                await _proceedWithMealAddition(option, calendarProvider);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -569,11 +576,11 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
         ),
       );
     } else {
-      _proceedWithMealAddition(option, calendarProvider);
+      await _proceedWithMealAddition(option, calendarProvider);
     }
   }
 
-  void _proceedWithMealAddition(Map<String, dynamic> option, CalendarProvider calendarProvider) {
+  Future<void> _proceedWithMealAddition(Map<String, dynamic> option, CalendarProvider calendarProvider) async {
     final meal = Meal(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: option['name'],
@@ -587,7 +594,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
 
     // Add to meal provider
     final mealProvider = Provider.of<MealProvider>(context, listen: false);
-    mealProvider.addMeal(meal);
+    await mealProvider.addMeal(meal);
 
     // Add to calendar provider
     calendarProvider.addMealToPlan(selectedDate, selectedMealType!, meal);
@@ -693,7 +700,13 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     );
   }
 
-  void _navigateToCustomMeal() {
+  void _navigateToCustomMeal(PremiumService premiumService) {
+    // Check if user can add custom meal
+    if (!premiumService.canAddCustomMeal()) {
+      _showPremiumLimitDialog(premiumService);
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -702,6 +715,66 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
         mealType: selectedMealType!,
         selectedDate: selectedDate,
         aiService: _aiService,
+      ),
+    );
+  }
+
+  void _showPremiumLimitDialog(PremiumService premiumService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Günlük Limit Aşıldı',
+          style: GoogleFonts.epilogue(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ücretsiz kullanıcılar günde ${PremiumService.maxDailyCustomMeals} özel yemek ekleyebilir.',
+              style: GoogleFonts.epilogue(),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Bugün ${premiumService.dailyCustomMealCount}/${PremiumService.maxDailyCustomMeals} özel yemek eklediniz.',
+              style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Premium\'a geçerek sınırsız özel yemek ekleyebilirsiniz!',
+              style: GoogleFonts.epilogue(color: AppColors.primary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'İptal',
+              style: GoogleFonts.epilogue(color: AppColors.textMedium),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PremiumScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
+            child: Text(
+              'Premium\'a Geç',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -745,6 +818,13 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
       return;
     }
 
+    // Check AI analysis limit for free users
+    final premiumService = Provider.of<PremiumService>(context, listen: false);
+    if (!premiumService.canUseAIAnalysis()) {
+      _showAILimitDialog(premiumService);
+      return;
+    }
+
     setState(() {
       _isAnalyzing = true;
       _nutritionEstimate = null;
@@ -752,6 +832,10 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
 
     try {
       final estimate = await widget.aiService.analyzeFood(_descriptionController.text.trim());
+      
+      // Increment AI analysis count for free users
+      premiumService.incrementAIAnalysisCount();
+      
       setState(() {
         _nutritionEstimate = estimate;
         if (estimate != null && _mealNameController.text.isEmpty) {
@@ -766,6 +850,66 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
         _isAnalyzing = false;
       });
     }
+  }
+
+  void _showAILimitDialog(PremiumService premiumService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'AI Analizi Limiti',
+          style: GoogleFonts.epilogue(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ücretsiz kullanıcılar haftada ${PremiumService.maxWeeklyAIAnalysis} AI analizi yapabilir.',
+              style: GoogleFonts.epilogue(),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Bu hafta ${premiumService.weeklyAIAnalysisCount}/${PremiumService.maxWeeklyAIAnalysis} analiz yaptınız.',
+              style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Premium\'a geçerek sınırsız AI analizi yapabilirsiniz!',
+              style: GoogleFonts.epilogue(color: AppColors.primary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'İptal',
+              style: GoogleFonts.epilogue(color: AppColors.textMedium),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PremiumScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
+            child: Text(
+              'Premium\'a Geç',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _addMeal() async {
@@ -808,7 +952,17 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
         meal
       );
       
+      // Increment custom meal count for free users
+      final premiumService = Provider.of<PremiumService>(context, listen: false);
+      premiumService.incrementCustomMealCount();
+      
       _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('mealAddedSuccessfully'), isError: false);
+      
+      // Show interstitial ad for free users occasionally
+      if (premiumService.showAds && premiumService.dailyCustomMealCount % 2 == 0) {
+        AdService().showInterstitialAd();
+      }
+      
       await Future.delayed(const Duration(seconds: 1));
       if (mounted) Navigator.pop(context);
     } catch (e) {

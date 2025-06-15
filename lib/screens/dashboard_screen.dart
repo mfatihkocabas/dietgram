@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../utils/app_colors.dart';
 import '../providers/meal_provider.dart';
 import '../providers/calendar_provider.dart';
 import '../models/meal.dart';
 import '../main.dart'; // AuthService için
+import '../services/ad_service.dart';
+import '../services/premium_service.dart';
+import '../screens/premium_screen.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -17,6 +21,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+  final AdService _adService = AdService();
 
   @override
   void initState() {
@@ -27,6 +32,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _currentIndex = 0;
       });
     });
+    
+    // Load ads for non-premium users
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final premiumService = Provider.of<PremiumService>(context, listen: false);
+      if (premiumService.showAds) {
+        _adService.preloadAds();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _adService.dispose();
+    super.dispose();
   }
 
   @override
@@ -78,6 +97,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _buildHeader(selectedDate),
                         const SizedBox(height: 16),
                         _buildCalorieCards(selectedDayMeals, calendarProvider),
+                        const SizedBox(height: 16),
+                        _buildBannerAd(),
                       ],
                     ),
                   ),
@@ -219,6 +240,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(width: 12),
+              // Premium button
+              Consumer<PremiumService>(
+                builder: (context, premiumService, child) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PremiumScreen()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: premiumService.isPremium 
+                            ? Colors.amber.withOpacity(0.1)
+                            : AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: premiumService.isPremium 
+                              ? Colors.amber.withOpacity(0.3)
+                              : AppColors.primary.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        premiumService.isPremium ? Icons.diamond : Icons.star,
+                        color: premiumService.isPremium ? Colors.amber[700] : AppColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 12),
               // Logout button
@@ -1126,8 +1181,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
               break;
             case 2:
-              // Show profile screen
-              _showProfileScreen();
+              // Navigate to profile screen
+              Navigator.pushNamed(context, '/profile').then((_) {
+                // Reset to home tab when returning
+                setState(() {
+                  _currentIndex = 0;
+                });
+              });
               break;
             case 3:
               // Back to onboarding
@@ -1416,6 +1476,109 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         tileColor: AppColors.lightGray.withOpacity(0.3),
       ),
+    );
+  }
+
+  Widget _buildBannerAd() {
+    return Consumer<PremiumService>(
+      builder: (context, premiumService, child) {
+        // Don't show ads for premium users
+        if (!premiumService.showAds) {
+          return const SizedBox.shrink();
+        }
+
+        // Show banner ad if loaded
+        if (_adService.isBannerAdLoaded && _adService.bannerAd != null) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.lightGray,
+                width: 1,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: _adService.bannerAd!.size.height.toDouble(),
+                child: AdWidget(ad: _adService.bannerAd!),
+              ),
+            ),
+          );
+        }
+
+        // Show upgrade prompt if no ad loaded
+        return Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary.withOpacity(0.1), AppColors.primary.withOpacity(0.05)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.diamond,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Premium\'a Geçin',
+                      style: GoogleFonts.epilogue(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    Text(
+                      'Reklamsız deneyim ve sınırsız özellikler',
+                      style: GoogleFonts.epilogue(
+                        fontSize: 12,
+                        color: AppColors.textMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PremiumScreen()),
+                  );
+                },
+                child: Text(
+                  'Yükselt',
+                  style: GoogleFonts.epilogue(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
