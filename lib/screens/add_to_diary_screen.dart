@@ -24,6 +24,121 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
   DateTime selectedDate = DateTime.now();
   final AINutritionService _aiService = AINutritionService();
 
+  List<Map<String, dynamic>> _getLocalizedMealOptions(String mealType, LocalizationService localization) {
+    switch (mealType) {
+      case 'breakfast':
+        return [
+          {
+            'name': localization.getString('mealOatmealBerries'),
+            'calories': 280.0,
+            'description': localization.getString('mealOatmealBerriesDesc'),
+            'ingredients': ['Rolled oats', 'Blueberries', 'Strawberries', 'Honey'],
+          },
+          {
+            'name': localization.getString('mealGreekYogurt'),
+            'calories': 220.0,
+            'description': localization.getString('mealGreekYogurtDesc'),
+            'ingredients': ['Greek yogurt', 'Granola', 'Banana', 'Honey'],
+          },
+          {
+            'name': localization.getString('mealAvocadoToast'),
+            'calories': 320.0,
+            'description': localization.getString('mealAvocadoToastDesc'),
+            'ingredients': ['Whole grain bread', 'Avocado', 'Salt', 'Pepper'],
+          },
+          {
+            'name': localization.getString('mealScrambledEggs'),
+            'calories': 250.0,
+            'description': localization.getString('mealScrambledEggsDesc'),
+            'ingredients': ['Eggs', 'Milk', 'Herbs', 'Butter'],
+          },
+        ];
+      case 'lunch':
+        return [
+          {
+            'name': localization.getString('mealGrilledChickenSalad'),
+            'calories': 420.0,
+            'description': localization.getString('mealGrilledChickenSaladDesc'),
+            'ingredients': ['Chicken breast', 'Mixed greens', 'Tomato', 'Cucumber'],
+          },
+          {
+            'name': localization.getString('mealQuinoaBowl'),
+            'calories': 380.0,
+            'description': localization.getString('mealQuinoaBowlDesc'),
+            'ingredients': ['Quinoa', 'Bell peppers', 'Zucchini', 'Tahini'],
+          },
+          {
+            'name': localization.getString('mealTurkeySandwich'),
+            'calories': 350.0,
+            'description': localization.getString('mealTurkeySandwichDesc'),
+            'ingredients': ['Whole grain bread', 'Turkey', 'Lettuce', 'Tomato'],
+          },
+          {
+            'name': localization.getString('mealLentilSoup'),
+            'calories': 280.0,
+            'description': localization.getString('mealLentilSoupDesc'),
+            'ingredients': ['Red lentils', 'Carrots', 'Onions', 'Vegetable broth'],
+          },
+        ];
+      case 'dinner':
+        return [
+          {
+            'name': localization.getString('mealGrilledSalmon'),
+            'calories': 450.0,
+            'description': localization.getString('mealGrilledSalmonDesc'),
+            'ingredients': ['Salmon fillet', 'Broccoli', 'Sweet potato', 'Olive oil'],
+          },
+          {
+            'name': localization.getString('mealChickenStirFry'),
+            'calories': 380.0,
+            'description': localization.getString('mealChickenStirFryDesc'),
+            'ingredients': ['Chicken breast', 'Bell peppers', 'Broccoli', 'Soy sauce'],
+          },
+          {
+            'name': localization.getString('mealVegetableCurry'),
+            'calories': 320.0,
+            'description': localization.getString('mealVegetableCurryDesc'),
+            'ingredients': ['Mixed vegetables', 'Coconut milk', 'Curry spices', 'Rice'],
+          },
+          {
+            'name': localization.getString('mealPastaPrimavera'),
+            'calories': 410.0,
+            'description': localization.getString('mealPastaPrimaveraDesc'),
+            'ingredients': ['Whole grain pasta', 'Zucchini', 'Cherry tomatoes', 'Basil'],
+          },
+        ];
+      case 'snack':
+        return [
+          {
+            'name': localization.getString('mealMixedNuts'),
+            'calories': 180.0,
+            'description': localization.getString('mealMixedNutsDesc'),
+            'ingredients': ['Almonds', 'Walnuts', 'Cashews'],
+          },
+          {
+            'name': localization.getString('mealApplePeanutButter'),
+            'calories': 190.0,
+            'description': localization.getString('mealApplePeanutButterDesc'),
+            'ingredients': ['Apple', 'Peanut butter'],
+          },
+          {
+            'name': localization.getString('mealProteinSmoothie'),
+            'calories': 250.0,
+            'description': localization.getString('mealProteinSmoothieDesc'),
+            'ingredients': ['Protein powder', 'Banana', 'Berries', 'Almond milk'],
+          },
+          {
+            'name': localization.getString('mealHummusVegetables'),
+            'calories': 150.0,
+            'description': localization.getString('mealHummusVegetablesDesc'),
+            'ingredients': ['Hummus', 'Carrots', 'Cucumbers', 'Bell peppers'],
+          },
+        ];
+      default:
+        return [];
+    }
+  }
+
   final Map<String, List<Map<String, dynamic>>> mealOptions = {
     'breakfast': [
       {
@@ -133,28 +248,25 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textDark),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Add to Diary',
-          style: GoogleFonts.epilogue(
-            fontWeight: FontWeight.w600,
-            color: AppColors.textDark,
-          ),
-        ),
+    return Consumer<LocalizationService>(
+      builder: (context, localization, child) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: AppColors.textDark),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              localization.getString('addToDiaryTitle'),
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.red),
-            onPressed: () => _showLogoutDialog(context),
-            tooltip: 'Logout',
-          ),
           Container(
             margin: const EdgeInsets.all(8),
             child: ElevatedButton(
@@ -170,7 +282,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                 ),
               ),
               child: Text(
-                _formatDate(selectedDate),
+                _formatDate(selectedDate, localization),
                 style: GoogleFonts.epilogue(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -181,8 +293,8 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
         ],
       ),
       body: selectedMealType == null
-          ? _buildMealTypeSelection()
-          : _buildMealOptionsGrid(),
+          ? _buildMealTypeSelection(localization)
+          : _buildMealOptionsGrid(localization),
       floatingActionButton: selectedMealType != null 
         ? Consumer<PremiumService>(
             builder: (context, premiumService, child) {
@@ -191,7 +303,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                 backgroundColor: AppColors.primary,
                 icon: const Icon(Icons.add, color: Colors.white),
                 label: Text(
-                  'Kendi Öğününü Ekle',
+                  localization.getString('addToDiaryAddCustomMeal'),
                   style: GoogleFonts.epilogue(
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -202,9 +314,11 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           )
         : null,
     );
+      },
+    );
   }
 
-  Widget _buildMealTypeSelection() {
+  Widget _buildMealTypeSelection(LocalizationService localization) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -243,7 +357,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Select meal type',
+                        localization.getString('addToDiarySelectMealType'),
                         style: GoogleFonts.epilogue(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -252,7 +366,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Choose which meal to add to ${_formatDate(selectedDate)}',
+                        localization.getStringWithParams('addToDiaryChooseMeal', {'date': _formatDate(selectedDate, localization)}),
                         style: GoogleFonts.epilogue(
                           fontSize: 16,
                           color: AppColors.textMedium,
@@ -272,10 +386,10 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
               mainAxisSpacing: 16,
               childAspectRatio: 1.2,
               children: [
-                _buildMealTypeCard('Breakfast', Icons.wb_sunny, 'breakfast', '6-10 AM'),
-                _buildMealTypeCard('Lunch', Icons.lunch_dining, 'lunch', '12-3 PM'),
-                _buildMealTypeCard('Dinner', Icons.dinner_dining, 'dinner', '6-9 PM'),
-                _buildMealTypeCard('Snack', Icons.cookie, 'snack', 'Anytime'),
+                _buildMealTypeCard(localization.getString('mealTypeBreakfast'), Icons.wb_sunny, 'breakfast', localization.getString('addToDiaryBreakfastTime'), localization),
+                _buildMealTypeCard(localization.getString('mealTypeLunch'), Icons.lunch_dining, 'lunch', localization.getString('addToDiaryLunchTime'), localization),
+                _buildMealTypeCard(localization.getString('mealTypeDinner'), Icons.dinner_dining, 'dinner', localization.getString('addToDiaryDinnerTime'), localization),
+                _buildMealTypeCard(localization.getString('mealTypeSnack'), Icons.cookie, 'snack', localization.getString('addToDiarySnackTime'), localization),
               ],
             ),
           ),
@@ -284,7 +398,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     );
   }
 
-  Widget _buildMealTypeCard(String title, IconData icon, String type, String timeRange) {
+  Widget _buildMealTypeCard(String title, IconData icon, String type, String timeRange, LocalizationService localization) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -358,8 +472,8 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     );
   }
 
-  Widget _buildMealOptionsGrid() {
-    final options = mealOptions[selectedMealType] ?? [];
+  Widget _buildMealOptionsGrid(LocalizationService localization) {
+    final options = _getLocalizedMealOptions(selectedMealType!, localization);
     
     return Column(
       children: [
@@ -376,7 +490,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                 icon: Icon(Icons.arrow_back, color: AppColors.textDark),
               ),
               Text(
-                '${selectedMealType![0].toUpperCase()}${selectedMealType!.substring(1)} Options',
+                localization.getStringWithParams('addToDiaryOptionsTitle', {'mealType': _getMealTypeName(selectedMealType!, localization)}),
                 style: GoogleFonts.epilogue(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -392,7 +506,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
             itemCount: options.length,
             itemBuilder: (context, index) {
               final option = options[index];
-              return _buildMealOptionCard(option);
+              return _buildMealOptionCard(option, localization);
             },
           ),
         ),
@@ -400,7 +514,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     );
   }
 
-  Widget _buildMealOptionCard(Map<String, dynamic> option) {
+  Widget _buildMealOptionCard(Map<String, dynamic> option, LocalizationService localization) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -482,7 +596,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-                                            onPressed: () async => await _addMealToCalendar(option),
+                                            onPressed: () async => await _addMealToCalendar(option, localization),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -491,7 +605,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
                 ),
               ),
               child: Text(
-                'Add to ${_formatDate(selectedDate)}',
+                localization.getStringWithParams('addToDiaryAddToDate', {'date': _formatDate(selectedDate, localization)}),
                 style: GoogleFonts.epilogue(
                   fontWeight: FontWeight.w600,
                 ),
@@ -503,7 +617,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     );
   }
 
-  Future<void> _addMealToCalendar(Map<String, dynamic> option) async {
+  Future<void> _addMealToCalendar(Map<String, dynamic> option, LocalizationService localization) async {
     final calendarProvider = Provider.of<CalendarProvider>(context, listen: false);
     
     // Check calorie limits before adding
@@ -517,7 +631,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text(
-            'Calorie Limit Warning',
+            localization.getString('addToDiaryCalorieLimit'),
             style: GoogleFonts.epilogue(
               fontWeight: FontWeight.w600,
               color: Colors.red,
@@ -528,24 +642,24 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Adding this meal will exceed the recommended calorie limit for ${selectedMealType!}.',
+                localization.getStringWithParams('addToDiaryCalorieLimitMessage', {'mealType': _getMealTypeName(selectedMealType!, localization)}),
                 style: GoogleFonts.epilogue(fontSize: 14),
               ),
               const SizedBox(height: 12),
               Text(
-                'Current: ${currentCalories.toInt()} cal',
+                localization.getStringWithParams('addToDiaryCurrent', {'calories': currentCalories.toInt().toString()}),
                 style: GoogleFonts.epilogue(fontSize: 12, color: AppColors.textMedium),
               ),
               Text(
-                'Adding: ${newMealCalories.toInt()} cal',
+                localization.getStringWithParams('addToDiaryAdding', {'calories': newMealCalories.toInt().toString()}),
                 style: GoogleFonts.epilogue(fontSize: 12, color: AppColors.textMedium),
               ),
               Text(
-                'Total: ${(currentCalories + newMealCalories).toInt()} cal',
+                localization.getStringWithParams('addToDiaryTotal', {'calories': (currentCalories + newMealCalories).toInt().toString()}),
                 style: GoogleFonts.epilogue(fontSize: 12, fontWeight: FontWeight.w600),
               ),
               Text(
-                'Limit: ${limit.toInt()} cal',
+                localization.getStringWithParams('addToDiaryLimit', {'calories': limit.toInt().toString()}),
                 style: GoogleFonts.epilogue(fontSize: 12, color: Colors.red),
               ),
             ],
@@ -554,21 +668,21 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'Cancel',
+                localization.getString('cancel'),
                 style: GoogleFonts.epilogue(color: AppColors.textMedium),
               ),
             ),
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(context);
-                await _proceedWithMealAddition(option, calendarProvider);
+                await _proceedWithMealAddition(option, calendarProvider, localization);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
               child: Text(
-                'Add Anyway',
+                localization.getString('addToDiaryAddAnyway'),
                 style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
               ),
             ),
@@ -576,11 +690,11 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
         ),
       );
     } else {
-      await _proceedWithMealAddition(option, calendarProvider);
+      await _proceedWithMealAddition(option, calendarProvider, localization);
     }
   }
 
-  Future<void> _proceedWithMealAddition(Map<String, dynamic> option, CalendarProvider calendarProvider) async {
+  Future<void> _proceedWithMealAddition(Map<String, dynamic> option, CalendarProvider calendarProvider, LocalizationService localization) async {
     final meal = Meal(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: option['name'],
@@ -602,7 +716,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${option['name']} added to ${_formatDate(selectedDate)}',
+          localization.getStringWithParams('addToDiaryMealAdded', {'meal': option['name'], 'date': _formatDate(selectedDate, localization)}),
           style: GoogleFonts.epilogue(),
         ),
         backgroundColor: AppColors.primary,
@@ -641,64 +755,35 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
     }
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, LocalizationService localization) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final selectedDay = DateTime(date.year, date.month, date.day);
     
     if (selectedDay == today) {
-      return 'Today';
+      return localization.getString('dateToday');
     } else if (selectedDay == today.add(const Duration(days: 1))) {
-      return 'Tomorrow';
+      return localization.getString('dateTomorrow');
     } else if (selectedDay == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
+      return localization.getString('dateYesterday');
     } else {
       final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return '${months[date.month - 1]} ${date.day}';
     }
   }
-  
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Logout',
-          style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
-        ),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: GoogleFonts.epilogue(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.epilogue(color: AppColors.textMedium),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close dialog first
-              // Use AuthService to logout
-              final authService = Provider.of<AuthService>(context, listen: false);
-              await authService.signOut();
-              // AuthWrapper will automatically navigate to login screen
-            },
-            child: Text(
-              'Logout',
-              style: GoogleFonts.epilogue(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+
+  String _getMealTypeName(String mealType, LocalizationService localization) {
+    switch (mealType) {
+      case 'breakfast': return localization.getString('mealTypeBreakfast');
+      case 'lunch': return localization.getString('mealTypeLunch');
+      case 'dinner': return localization.getString('mealTypeDinner');
+      case 'snack': return localization.getString('mealTypeSnack');
+      default: return mealType;
+    }
   }
+  
+
 
   void _navigateToCustomMeal(PremiumService premiumService) {
     // Check if user can add custom meal
@@ -707,24 +792,26 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
       return;
     }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CustomMealBottomSheet(
-        mealType: selectedMealType!,
-        selectedDate: selectedDate,
-        aiService: _aiService,
-      ),
-    );
+            showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => CustomMealBottomSheet(
+            mealType: selectedMealType!,
+            selectedDate: selectedDate,
+            aiService: _aiService,
+            parent: this,
+          ),
+        );
   }
 
   void _showPremiumLimitDialog(PremiumService premiumService) {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Günlük Limit Aşıldı',
+          localization.getString('addToDiaryDailyLimitExceeded'),
           style: GoogleFonts.epilogue(fontWeight: FontWeight.bold),
         ),
         content: Column(
@@ -732,17 +819,17 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ücretsiz kullanıcılar günde ${PremiumService.maxDailyCustomMeals} özel yemek ekleyebilir.',
+              localization.getStringWithParams('addToDiaryDailyLimitMessage', {'limit': PremiumService.maxDailyCustomMeals.toString()}),
               style: GoogleFonts.epilogue(),
             ),
             const SizedBox(height: 12),
             Text(
-              'Bugün ${premiumService.dailyCustomMealCount}/${PremiumService.maxDailyCustomMeals} özel yemek eklediniz.',
+              localization.getStringWithParams('addToDiaryDailyLimitUsage', {'used': premiumService.dailyCustomMealCount.toString(), 'limit': PremiumService.maxDailyCustomMeals.toString()}),
               style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Text(
-              'Premium\'a geçerek sınırsız özel yemek ekleyebilirsiniz!',
+              localization.getString('addToDiaryUpgradePremium'),
               style: GoogleFonts.epilogue(color: AppColors.primary),
             ),
           ],
@@ -751,7 +838,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              localization.getString('cancel'),
               style: GoogleFonts.epilogue(color: AppColors.textMedium),
             ),
           ),
@@ -767,7 +854,7 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
               backgroundColor: AppColors.primary,
             ),
             child: Text(
-              'Premium\'a Geç',
+              localization.getString('addToDiaryUpgradeButton'),
               style: GoogleFonts.epilogue(
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -785,12 +872,14 @@ class CustomMealBottomSheet extends StatefulWidget {
   final String mealType;
   final DateTime selectedDate;
   final AINutritionService aiService;
+  final _AddToDiaryScreenState parent;
 
   const CustomMealBottomSheet({
     super.key,
     required this.mealType,
     required this.selectedDate,
     required this.aiService,
+    required this.parent,
   });
 
   @override
@@ -812,7 +901,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
     super.dispose();
   }
 
-  Future<void> _analyzeFood() async {
+  Future<void> _analyzeFood(LocalizationService localization) async {
     if (_descriptionController.text.trim().isEmpty) {
       _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('enterFoodDescription'), isError: true);
       return;
@@ -821,7 +910,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
     // Check AI analysis limit for free users
     final premiumService = Provider.of<PremiumService>(context, listen: false);
     if (!premiumService.canUseAIAnalysis()) {
-      _showAILimitDialog(premiumService);
+      _showAILimitDialog(premiumService, localization);
       return;
     }
 
@@ -852,12 +941,12 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
     }
   }
 
-  void _showAILimitDialog(PremiumService premiumService) {
+  void _showAILimitDialog(PremiumService premiumService, LocalizationService localization) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'AI Analizi Limiti',
+          localization.getString('addToDiaryAILimitTitle'),
           style: GoogleFonts.epilogue(fontWeight: FontWeight.bold),
         ),
         content: Column(
@@ -865,17 +954,17 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ücretsiz kullanıcılar haftada ${PremiumService.maxWeeklyAIAnalysis} AI analizi yapabilir.',
+              localization.getStringWithParams('addToDiaryAILimitMessage', {'limit': PremiumService.maxWeeklyAIAnalysis.toString()}),
               style: GoogleFonts.epilogue(),
             ),
             const SizedBox(height: 12),
             Text(
-              'Bu hafta ${premiumService.weeklyAIAnalysisCount}/${PremiumService.maxWeeklyAIAnalysis} analiz yaptınız.',
+              localization.getStringWithParams('addToDiaryAILimitUsage', {'used': premiumService.weeklyAIAnalysisCount.toString(), 'limit': PremiumService.maxWeeklyAIAnalysis.toString()}),
               style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Text(
-              'Premium\'a geçerek sınırsız AI analizi yapabilirsiniz!',
+              localization.getString('addToDiaryAILimitUpgrade'),
               style: GoogleFonts.epilogue(color: AppColors.primary),
             ),
           ],
@@ -884,7 +973,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              localization.getString('cancel'),
               style: GoogleFonts.epilogue(color: AppColors.textMedium),
             ),
           ),
@@ -900,7 +989,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
               backgroundColor: AppColors.primary,
             ),
             child: Text(
-              'Premium\'a Geç',
+              localization.getString('addToDiaryUpgradeButton'),
               style: GoogleFonts.epilogue(
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -912,7 +1001,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
     );
   }
 
-  Future<void> _addMeal() async {
+  Future<void> _addMeal(LocalizationService localization) async {
     if (!_formKey.currentState!.validate()) return;
     if (_nutritionEstimate == null) {
       _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('analysisRequired'), isError: true);
@@ -921,7 +1010,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
 
     // Kalori sınırı kontrolü
     if (widget.aiService.checkMealCalorieLimit(widget.mealType, _nutritionEstimate!.nutrition.calories)) {
-      _showCalorieWarningDialog();
+      _showCalorieWarningDialog(localization);
       return;
     }
 
@@ -943,7 +1032,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
 
     try {
       // Add to both providers
-      await Provider.of<MealProvider>(context, listen: false).addMeal(meal);
+      Provider.of<MealProvider>(context, listen: false).addMeal(meal);
       
       // Add to calendar provider for the specific date and meal type
       Provider.of<CalendarProvider>(context, listen: false).addMealToPlan(
@@ -970,35 +1059,35 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
     }
   }
 
-  void _showCalorieWarningDialog() {
+  void _showCalorieWarningDialog(LocalizationService localization) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Kalori Sınırı Uyarısı', style: GoogleFonts.epilogue(fontWeight: FontWeight.bold)),
-        content: Text('Bu öğün ${_getMealTypeName(widget.mealType)} için önerilen kalori sınırını aşıyor.'),
+        title: Text(localization.getString('addToDiaryCalorieWarning'), style: GoogleFonts.epilogue(fontWeight: FontWeight.bold)),
+        content: Text(localization.getStringWithParams('addToDiaryCalorieWarningMessage', {'mealType': _getMealTypeName(widget.mealType, localization)})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
+            child: Text(localization.getString('cancel')),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _saveMeal();
             },
-            child: const Text('Yine de Ekle'),
+            child: Text(localization.getString('addToDiaryAddAnyway')),
           ),
         ],
       ),
     );
   }
 
-  String _getMealTypeName(String mealType) {
+  String _getMealTypeName(String mealType, LocalizationService localization) {
     switch (mealType) {
-      case 'breakfast': return 'Kahvaltı';
-      case 'lunch': return 'Öğle Yemeği';
-      case 'dinner': return 'Akşam Yemeği';
-      case 'snack': return 'Atıştırmalık';
+      case 'breakfast': return localization.getString('mealTypeBreakfast');
+      case 'lunch': return localization.getString('mealTypeLunch');
+      case 'dinner': return localization.getString('mealTypeDinner');
+      case 'snack': return localization.getString('mealTypeSnack');
       default: return mealType;
     }
   }
@@ -1034,36 +1123,42 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
           ),
           
           // Header
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Kendi Öğününü Ekle',
-                    style: GoogleFonts.epilogue(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+          Consumer<LocalizationService>(
+            builder: (context, localization, child) {
+              return Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        localization.getString('addToDiaryAddCustomMeal'),
+                        style: GoogleFonts.epilogue(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
+              );
+            },
           ),
           
           // Content
           Expanded(
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            child: Consumer<LocalizationService>(
+              builder: (context, localization, child) {
+                return Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     // Meal type indicator
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -1076,7 +1171,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                           Icon(Icons.restaurant, color: AppColors.primary),
                           const SizedBox(width: 12),
                           Text(
-                            _getMealTypeName(widget.mealType),
+                            _getMealTypeName(widget.mealType, localization),
                             style: GoogleFonts.epilogue(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -1090,7 +1185,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                     
                     // Description field
                     Text(
-                      'Yemek Açıklaması',
+                      localization.getString('addToDiaryFoodDescription'),
                       style: GoogleFonts.epilogue(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -1101,12 +1196,12 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                       controller: _descriptionController,
                       maxLines: 4,
                       decoration: InputDecoration(
-                        hintText: 'Örnek: Domates biber ile menemen yaptım, 2 yumurta kullandım...',
+                        hintText: localization.getString('addToDiaryFoodDescriptionHint'),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Açıklama gereklidir' : null,
+                      validator: (value) => value?.isEmpty ?? true ? localization.getString('addToDiaryDescriptionRequired') : null,
                     ),
                     
                     const SizedBox(height: 16),
@@ -1115,7 +1210,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _isAnalyzing ? null : _analyzeFood,
+                        onPressed: _isAnalyzing ? null : () => _analyzeFood(localization),
                         icon: _isAnalyzing 
                           ? const SizedBox(
                               width: 20,
@@ -1124,7 +1219,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                             )
                           : const Icon(Icons.psychology, color: Colors.white),
                         label: Text(
-                          _isAnalyzing ? 'AI Analiz Ediliyor...' : 'AI ile Analiz Et',
+                          _isAnalyzing ? localization.getString('addToDiaryAnalyzing') : localization.getString('addToDiaryAnalyzeWithAI'),
                           style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -1155,7 +1250,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                                 Icon(Icons.psychology, color: AppColors.primary),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'AI Analiz Sonucu',
+                                  localization.getString('addToDiaryAIResult'),
                                   style: GoogleFonts.epilogue(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -1187,7 +1282,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                                   Icon(Icons.local_fire_department, color: AppColors.primary),
                                   const SizedBox(width: 8),
                                   Text(
-                                    '${_nutritionEstimate!.nutrition.calories.round()} Kalori',
+                                    localization.getStringWithParams('addToDiaryCalories', {'calories': _nutritionEstimate!.nutrition.calories.round().toString()}),
                                     style: GoogleFonts.epilogue(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
@@ -1205,7 +1300,7 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                       
                       // Meal name field
                       Text(
-                        'Öğün Adı',
+                        localization.getString('addToDiaryMealName'),
                         style: GoogleFonts.epilogue(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1215,12 +1310,12 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                       TextFormField(
                         controller: _mealNameController,
                         decoration: InputDecoration(
-                          hintText: 'Öğün için bir isim verin',
+                          hintText: localization.getString('addToDiaryMealNameHint'),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        validator: (value) => value?.isEmpty ?? true ? 'Öğün adı gereklidir' : null,
+                        validator: (value) => value?.isEmpty ?? true ? localization.getString('addToDiaryMealNameRequired') : null,
                       ),
                       
                       const SizedBox(height: 24),
@@ -1229,10 +1324,10 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: _addMeal,
+                          onPressed: () => _addMeal(localization),
                           icon: const Icon(Icons.add, color: Colors.white),
                           label: Text(
-                            'Öğünü Günlüğe Ekle',
+                            localization.getString('addToDiaryAddToJournal'),
                             style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -1247,13 +1342,15 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
                       
                       const SizedBox(height: 20),
                     ],
-                  ],
-                ),
-              ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
     );
   }
-} 
+}

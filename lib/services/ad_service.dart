@@ -62,30 +62,44 @@ class AdService {
 
   /// Load Banner Ad
   void loadBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: _bannerAdUnitId,
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          _isBannerAdLoaded = true;
-          if (kDebugMode) print('Banner ad loaded successfully');
-        },
-        onAdFailedToLoad: (ad, error) {
-          _isBannerAdLoaded = false;
-          ad.dispose();
-          if (kDebugMode) print('Banner ad failed to load: $error');
-        },
-        onAdOpened: (ad) {
-          if (kDebugMode) print('Banner ad opened');
-        },
-        onAdClosed: (ad) {
-          if (kDebugMode) print('Banner ad closed');
-        },
-      ),
-    );
+    // Dispose existing banner ad if any
+    if (_bannerAd != null) {
+      _bannerAd!.dispose();
+      _bannerAd = null;
+      _isBannerAdLoaded = false;
+    }
     
-    _bannerAd!.load();
+    try {
+      _bannerAd = BannerAd(
+        adUnitId: _bannerAdUnitId,
+        size: AdSize.banner,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            _isBannerAdLoaded = true;
+            if (kDebugMode) print('Banner ad loaded successfully');
+          },
+          onAdFailedToLoad: (ad, error) {
+            _isBannerAdLoaded = false;
+            ad.dispose();
+            _bannerAd = null;
+            if (kDebugMode) print('Banner ad failed to load: $error');
+          },
+          onAdOpened: (ad) {
+            if (kDebugMode) print('Banner ad opened');
+          },
+          onAdClosed: (ad) {
+            if (kDebugMode) print('Banner ad closed');
+          },
+        ),
+      );
+      
+      _bannerAd!.load();
+    } catch (e) {
+      if (kDebugMode) print('Error creating banner ad: $e');
+      _isBannerAdLoaded = false;
+      _bannerAd = null;
+    }
   }
 
   /// Load Interstitial Ad

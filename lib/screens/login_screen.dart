@@ -112,7 +112,11 @@ class LoginScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/dashboard');
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, 
+                      '/dashboard', 
+                      (route) => false,
+                    );
                   },
                   child: Text(
                     'Continue to Dashboard',

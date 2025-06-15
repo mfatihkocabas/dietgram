@@ -76,10 +76,26 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         // Firebase sign up
         await authService.signUp(email, password);
         _showSnackBar('Account created successfully! Please verify your email.', isError: false);
+        // Navigate to dashboard after successful signup
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context, 
+            '/dashboard', 
+            (route) => false,
+          );
+        }
       } else {
         // Firebase sign in
         await authService.signIn(email, password);
         _showSnackBar('Welcome back!', isError: false);
+        // Navigate to dashboard after successful login
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context, 
+            '/dashboard', 
+            (route) => false,
+          );
+        }
       }
     } on Exception catch (e) {
       // Show the actual Firebase error message

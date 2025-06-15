@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // TODO: Re-enable Firebase when it's properly configured
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
           create: (_) => LocalizationService()..initialize(),
         ),
         ChangeNotifierProvider(
-          create: (_) => AuthService(),
+          create: (_) => AuthService()..initialize(),
         ),
         ChangeNotifierProvider(
           create: (_) => MealProvider(),
@@ -141,9 +142,20 @@ class MyApp extends StatelessWidget {
 class AuthService extends ChangeNotifier {
   bool _isLoggedIn = false;
   String? _userEmail;
+  bool _isInitialized = false;
 
   bool get isLoggedIn => _isLoggedIn;
   String? get userEmail => _userEmail;
+  bool get isInitialized => _isInitialized;
+
+  // Initialize auth state from SharedPreferences
+  Future<void> initialize() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    _userEmail = prefs.getString('userEmail');
+    _isInitialized = true;
+    notifyListeners();
+  }
 
   Future<void> signIn(String email, String password) async {
     // Simulate network delay
@@ -164,6 +176,12 @@ class AuthService extends ChangeNotifier {
     
     _isLoggedIn = true;
     _userEmail = email;
+    
+    // Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('userEmail', email);
+    
     notifyListeners();
   }
 
@@ -187,12 +205,24 @@ class AuthService extends ChangeNotifier {
     // Simulate account creation
     _isLoggedIn = true;
     _userEmail = email;
+    
+    // Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('userEmail', email);
+    
     notifyListeners();
   }
 
   Future<void> signOut() async {
     _isLoggedIn = false;
     _userEmail = null;
+    
+    // Clear SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
+    await prefs.remove('userEmail');
+    
     notifyListeners();
   }
 
@@ -220,6 +250,11 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthService>(
       builder: (context, authService, child) {
+        // Show splash screen while initializing
+        if (!authService.isInitialized) {
+          return const SplashScreen();
+        }
+        
         if (authService.isLoggedIn) {
           return const DashboardScreen();
         } else {

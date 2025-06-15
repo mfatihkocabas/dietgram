@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
 import '../services/ai_nutrition_service.dart';
+import '../services/localization_service.dart';
 import '../models/meal.dart';
 import '../providers/meal_provider.dart';
 
@@ -127,11 +128,12 @@ class _AddCustomMealScreenState extends State<AddCustomMealScreen> {
   }
 
   String _getMealTypeName(String mealType) {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
     switch (mealType) {
-      case 'breakfast': return 'Kahvaltı';
-      case 'lunch': return 'Öğle Yemeği';
-      case 'dinner': return 'Akşam Yemeği';
-      case 'snack': return 'Atıştırmalık';
+      case 'breakfast': return localization.getString('mealTypeBreakfast');
+      case 'lunch': return localization.getString('mealTypeLunch');
+      case 'dinner': return localization.getString('mealTypeDinner');
+      case 'snack': return localization.getString('mealTypeSnack');
       default: return mealType;
     }
   }

@@ -9,6 +9,7 @@ import '../models/meal.dart';
 import '../main.dart'; // AuthService için
 import '../services/ad_service.dart';
 import '../services/premium_service.dart';
+import '../services/localization_service.dart';
 import '../screens/premium_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -112,32 +113,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            'Timeline',
-                            style: GoogleFonts.epilogue(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
+                          child: Consumer<LocalizationService>(
+                            builder: (context, localization, child) {
+                              return Text(
+                                localization.getString('dashboardTimeline'),
+                                style: GoogleFonts.epilogue(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textDark,
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/calendar').then((_) {
-                              // Reset to home tab when returning from calendar
-                              setState(() {
-                                _currentIndex = 0;
-                              });
-                            });
+                        Consumer<LocalizationService>(
+                          builder: (context, localization, child) {
+                            return TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/calendar').then((_) {
+                                  // Reset to home tab when returning from calendar
+                                  setState(() {
+                                    _currentIndex = 0;
+                                  });
+                                });
+                              },
+                              child: Text(
+                                localization.getString('dashboardViewCalendar'),
+                                style: GoogleFonts.epilogue(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            );
                           },
-                          child: Text(
-                            'View Calendar',
-                            style: GoogleFonts.epilogue(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
                         ),
                       ],
                     ),
@@ -192,7 +201,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     DateTime.now().month == selectedDate.month &&
                     DateTime.now().year == selectedDate.year;
     
-    return Container(
+    return Consumer<LocalizationService>(
+      builder: (context, localization, child) {
+        return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -220,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isToday ? 'Good Morning!' : 'Selected Day',
+                      isToday ? localization.getString('dashboardGoodMorning') : localization.getString('dashboardSelectedDay'),
                       style: GoogleFonts.epilogue(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -229,7 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isToday ? 'Track your meals today' : _formatSelectedDate(selectedDate),
+                      isToday ? localization.getString('dashboardTrackMeals') : _formatSelectedDate(selectedDate, localization),
                       style: GoogleFonts.epilogue(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -310,7 +321,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Viewing meals for this day',
+                    localization.getString('dashboardViewingDay'),
                     style: GoogleFonts.epilogue(
                       fontSize: 12,
                       color: AppColors.textMedium,
@@ -323,20 +334,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ],
       ),
+        );
+      },
     );
   }
 
-  String _formatSelectedDate(DateTime date) {
+  String _formatSelectedDate(DateTime date, LocalizationService localization) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final selectedDay = DateTime(date.year, date.month, date.day);
     
     if (selectedDay == today) {
-      return 'Today';
+      return localization.getString('dateToday');
     } else if (selectedDay == today.add(const Duration(days: 1))) {
-      return 'Tomorrow';
+      return localization.getString('dateTomorrow');
     } else if (selectedDay == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
+      return localization.getString('dateYesterday');
     } else {
       return DateFormat('EEEE, MMMM d').format(date);
     }
@@ -356,7 +369,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final dinnerCalories = meals.where((m) => m.type == 'dinner')
         .fold(0.0, (sum, meal) => sum + meal.calories);
 
-    return Column(
+    return Consumer<LocalizationService>(
+      builder: (context, localization, child) {
+        return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Daily Progress Card
@@ -385,7 +400,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Daily Progress',
+                      localization.getString('dashboardDailyProgress'),
                       style: GoogleFonts.epilogue(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -426,7 +441,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         Text(
-                          'of ${targetCalories} calories',
+                          '${localization.getString('dashboardOf')} ${targetCalories} ${localization.getString('dashboardCalories')}',
                           style: GoogleFonts.epilogue(
                             fontSize: 12,
                             color: AppColors.textMedium,
@@ -477,7 +492,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         
         // Quick Stats
         Text(
-          'Meal Breakdown',
+          localization.getString('dashboardMealBreakdown'),
           style: GoogleFonts.epilogue(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -488,21 +503,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           children: [
             _buildMealTypeCard(
-              'Breakfast',
+              localization.getString('mealBreakfast'),
               breakfastCalories,
               CalendarProvider.mealCalorieLimits['breakfast']!,
               Icons.wb_sunny,
             ),
             const SizedBox(width: 12),
             _buildMealTypeCard(
-              'Lunch',
+              localization.getString('mealLunch'),
               lunchCalories,
               CalendarProvider.mealCalorieLimits['lunch']!,
               Icons.lunch_dining,
             ),
             const SizedBox(width: 12),
             _buildMealTypeCard(
-              'Dinner',
+              localization.getString('mealDinner'),
               dinnerCalories,
               CalendarProvider.mealCalorieLimits['dinner']!,
               Icons.dinner_dining,
@@ -510,6 +525,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ],
+        );
+      },
     );
   }
 
@@ -597,7 +614,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildEmptyState(CalendarProvider calendarProvider) {
-    return Container(
+    return Consumer<LocalizationService>(
+      builder: (context, localization, child) {
+        return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -633,7 +652,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Start Your Journey',
+            localization.getString('dashboardEmptyStateTitle'),
             textAlign: TextAlign.center,
             style: GoogleFonts.epilogue(
               fontSize: 18,
@@ -645,7 +664,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
-              'Track your nutrition, discover new recipes, and achieve your health goals with AI-powered insights',
+              localization.getString('dashboardEmptyStateDescription'),
               textAlign: TextAlign.center,
               style: GoogleFonts.epilogue(
                 fontSize: 13,
@@ -674,7 +693,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     icon: const Icon(Icons.add, size: 16),
                     label: Text(
-                      'Add Meal',
+                      localization.getString('dashboardAddMeal'),
                       style: GoogleFonts.epilogue(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -700,7 +719,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     icon: const Icon(Icons.auto_awesome, size: 16),
                     label: Text(
-                      'AI Menu',
+                      localization.getString('dashboardAIMenu'),
                       style: GoogleFonts.epilogue(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -722,6 +741,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 
@@ -752,48 +773,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_awesome, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    "AI Menu Suggestions",
-                    style: GoogleFonts.epilogue(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
+      builder: (context) => Consumer<LocalizationService>(
+        builder: (context, localization, child) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Icon(Icons.auto_awesome, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        localization.getString('aiMenuSuggestions'),
+                        style: GoogleFonts.epilogue(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: calendarProvider.aiSuggestions.length,
+                    itemBuilder: (context, index) {
+                      final suggestion = calendarProvider.aiSuggestions[index];
+                      return _buildAISuggestionCard(suggestion, calendarProvider, localization);
+                    },
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: calendarProvider.aiSuggestions.length,
-                itemBuilder: (context, index) {
-                  final suggestion = calendarProvider.aiSuggestions[index];
-                  return _buildAISuggestionCard(suggestion, calendarProvider);
-                },
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildAISuggestionCard(dynamic suggestion, CalendarProvider calendarProvider) {
+  Widget _buildAISuggestionCard(dynamic suggestion, CalendarProvider calendarProvider, LocalizationService localization) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -876,7 +901,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           )).toList(),
           const SizedBox(height: 12),
           Text(
-            "Total: ${suggestion.totalCalories.toInt()} calories",
+            "${localization.getString('totalCalories')}: ${suggestion.totalCalories.toInt()} ${localization.getString('dashboardCalories')}",
             style: GoogleFonts.epilogue(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -893,7 +918,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "AI suggestion applied successfully!",
+                      localization.getString('aiSuggestionApplied'),
                       style: GoogleFonts.epilogue(),
                     ),
                     backgroundColor: AppColors.primary,
@@ -908,7 +933,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               child: Text(
-                "Apply Menu",
+                localization.getString('applyMenu'),
                 style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
               ),
             ),
@@ -933,10 +958,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  String _getMealTypeName(String mealType, LocalizationService localization) {
+    switch (mealType.toLowerCase()) {
+      case 'breakfast':
+        return localization.getString('mealTypeBreakfast');
+      case 'lunch':
+        return localization.getString('mealTypeLunch');
+      case 'dinner':
+        return localization.getString('mealTypeDinner');
+      case 'snack':
+        return localization.getString('mealTypeSnack');
+      default:
+        return mealType.toUpperCase();
+    }
+  }
+
   Widget _buildMealTimelineItem(Meal meal, bool isLast) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Row(
+    return Consumer<LocalizationService>(
+      builder: (context, localization, child) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Row(
         children: [
           // Modern timeline indicator
           SizedBox(
@@ -1034,7 +1076,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    meal.type.toUpperCase(),
+                                    _getMealTypeName(meal.type, localization).toUpperCase(),
                                     style: GoogleFonts.epilogue(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -1145,10 +1187,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
+      },
+    );
   }
 
   Widget _buildBottomNavigationBar() {
-    return Container(
+    return Consumer<LocalizationService>(
+      builder: (context, localization, child) {
+        return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -1190,10 +1236,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
               break;
             case 3:
-              // Back to onboarding
+              // Navigate to login screen
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                '/', 
+                '/login', 
                 (route) => false,
               );
               break;
@@ -1211,29 +1257,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
-            label: 'Home',
+            label: localization.getString('navigationHome'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             activeIcon: Icon(Icons.calendar_today),
-            label: 'Calendar',
+            label: localization.getString('navigationCalendar'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
-            label: 'Profile',
+            label: localization.getString('navigationProfile'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.logout_outlined),
             activeIcon: Icon(Icons.logout),
-            label: 'Exit',
+            label: localization.getString('navigationExit'),
           ),
         ],
       ),
+        );
+      },
     );
   }
 
