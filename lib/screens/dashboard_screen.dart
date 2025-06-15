@@ -767,7 +767,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showAISuggestions(CalendarProvider calendarProvider) {
-    calendarProvider.generateAISuggestions();
+    // Premium service'i kontrol et
+    final premiumService = Provider.of<PremiumService>(context, listen: false);
+    
+    // AI suggestions'ı temizle ve yeni oluştur
+    calendarProvider.clearAISuggestions();
+    calendarProvider.generateAISuggestions(isPremium: premiumService.isPremium);
     
     showModalBottomSheet(
       context: context,
@@ -775,45 +780,153 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => Consumer<LocalizationService>(
         builder: (context, localization, child) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.7,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.8,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          Icon(Icons.auto_awesome, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              localization.getString('aiMenuSuggestions'),
+                              style: GoogleFonts.epilogue(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                          ),
+                          _buildRefreshButton(calendarProvider, premiumService, localization, setState),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Consumer<CalendarProvider>(
+                        builder: (context, provider, child) {
+                          return provider.aiSuggestions.isEmpty
+                              ? _buildLoadingState(localization)
+                              : ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  itemCount: provider.aiSuggestions.length,
+                                  itemBuilder: (context, index) {
+                                    final suggestion = provider.aiSuggestions[index];
+                                    return _buildAISuggestionCard(suggestion, provider, localization);
+                                  },
+                                );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRefreshButton(CalendarProvider calendarProvider, PremiumService premiumService, LocalizationService localization, StateSetter setState) {
+    return StreamBuilder<int>(
+      stream: Stream.periodic(const Duration(seconds: 1), (i) => i)
+          .map((_) => calendarProvider.getRemainingCooldown()),
+      builder: (context, snapshot) {
+        final canRefresh = calendarProvider.canRequestNewSuggestions();
+        final remainingTime = snapshot.data ?? calendarProvider.getRemainingCooldown();
+
+        return ElevatedButton.icon(
+                onPressed: canRefresh ? () async {
+        try {
+          calendarProvider.clearAISuggestions();
+          await calendarProvider.generateAISuggestions(isPremium: premiumService.isPremium);
+          setState(() {}); // UI'ı güncelle
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: canRefresh ? AppColors.primary : Colors.grey,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          icon: Icon(
+            canRefresh ? Icons.refresh : Icons.timer,
+            size: 16,
+          ),
+          label: Text(
+            canRefresh ? 'Değiştir' : '${remainingTime}s',
+            style: GoogleFonts.epilogue(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingState(LocalizationService localization) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      Icon(Icons.auto_awesome, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        localization.getString('aiMenuSuggestions'),
-                        style: GoogleFonts.epilogue(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                    ],
-                  ),
+                Icon(
+                  Icons.auto_awesome,
+                  size: 48,
+                  color: AppColors.primary,
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: calendarProvider.aiSuggestions.length,
-                    itemBuilder: (context, index) {
-                      final suggestion = calendarProvider.aiSuggestions[index];
-                      return _buildAISuggestionCard(suggestion, calendarProvider, localization);
-                    },
-                  ),
+                const SizedBox(height: 16),
+                CircularProgressIndicator(
+                  color: AppColors.primary,
+                  strokeWidth: 3,
                 ),
               ],
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 24),
+          Text(
+            '🤖 AI menü önerileri hazırlanıyor...',
+            style: GoogleFonts.epilogue(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Size özel beslenme planları oluşturuluyor',
+            style: GoogleFonts.epilogue(
+              fontSize: 14,
+              color: AppColors.textMedium,
+            ),
+          ),
+        ],
       ),
     );
   }

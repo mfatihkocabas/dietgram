@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
-// import 'package:http/http.dart' as http; // HTTP istekleri için - gerektiğinde uncomment edin
+import 'package:http/http.dart' as http;
 
 class NutritionInfo {
   final double calories;
@@ -52,17 +52,13 @@ class NutritionEstimate {
 
 class AINutritionService {
   // *** CONFIGURATION ***
-  // Bu değişkenleri kendi API anahtarlarınızla değiştirin
-  static const String _openAIApiKey = 'YOUR_OPENAI_API_KEY_HERE';
-  static const String _geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
+  static const String _openAIApiKey = 'YOUR_OPENAI_API_KEY_HERE'; // Premium kullanıcılar için
+  static const String _geminiApiKey = 'AIzaSyDyCppKyhdMzjkiZCEXZX2Fg7brUZatJeE'; // Ücretsiz kullanıcılar için
   static const String _nutritionAPIKey = 'YOUR_NUTRITION_API_KEY_HERE';
-  
-  // Hangi AI servisini kullanmak istediğinizi seçin
-  static const AIProvider _provider = AIProvider.mock; // mock, openai, gemini, nutritionapi
   
   // API endpoints
   static const String _openAIEndpoint = 'https://api.openai.com/v1/chat/completions';
-  static const String _geminiEndpoint = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
+  static const String _geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
   static const String _nutritionAPIEndpoint = 'https://api.edamam.com/api/nutrition-data';
 
   // Meal calorie limits
@@ -294,46 +290,70 @@ class AINutritionService {
     },
   };
 
-  /// Gerçek AI servisini kullanmak için bu metodu çağırın
+  /// AI servisini kullanarak yemek analizi yapar
   /// [description]: Kullanıcının yemek açıklaması
-  Future<NutritionEstimate?> analyzeFood(String description) async {
-    switch (_provider) {
-      case AIProvider.openai:
+  /// [isPremium]: Kullanıcının premium olup olmadığı
+  Future<NutritionEstimate?> analyzeFood(String description, {bool isPremium = false}) async {
+    try {
+      if (isPremium) {
+        // Premium kullanıcılar için OpenAI kullan
         return await _analyzeWithOpenAI(description);
-      case AIProvider.gemini:
+      } else {
+        // Ücretsiz kullanıcılar için Gemini kullan
         return await _analyzeWithGemini(description);
-      case AIProvider.nutritionapi:
-        return await _analyzeWithNutritionAPI(description);
-      case AIProvider.mock:
-      default:
-        return _analyzeWithMockAI(description);
+      }
+    } catch (e) {
+      print('AI Analysis Error: $e');
+      // Hata durumunda mock data döndür
+      return _analyzeWithMockAI(description);
     }
   }
 
-  /// OpenAI GPT ile analiz (gerçek AI)
+  /// OpenAI GPT ile analiz (Premium kullanıcılar için)
   Future<NutritionEstimate?> _analyzeWithOpenAI(String description) async {
-    /*
-    // HTTP paketini uncomment edin ve bu kodu kullanın:
-    
     final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $_openAIApiKey',
     };
+
+    final systemPrompt = '''
+Sen bir profesyonel beslenme uzmanısın. Kullanıcının verdiği yemek açıklamasını analiz et ve besin değerlerini tahmin et. 
+Türkçe yemekleri çok iyi tanıyorsun ve porsiyon büyüklüklerini doğru tahmin edebiliyorsun.
+
+Yanıtını tam olarak şu JSON formatında ver:
+{
+  "recognizedFood": "tanınan yemek adı",
+  "description": "yemeğin detaylı açıklaması",
+  "ingredients": ["malzeme1", "malzeme2", "malzeme3"],
+  "nutrition": {
+    "calories": sayı,
+    "protein": sayı,
+    "carbs": sayı,
+    "fat": sayı,
+    "fiber": sayı,
+    "sugar": sayı,
+    "sodium": sayı
+  },
+  "confidence": 0.95
+}
+
+Sadece JSON yanıtı ver, başka açıklama ekleme.
+''';
 
     final body = json.encode({
       'model': 'gpt-3.5-turbo',
       'messages': [
         {
           'role': 'system',
-          'content': 'Sen bir beslenme uzmanısın. Kullanıcının verdiği yemek açıklamasını analiz et ve JSON formatında kalori, protein, karbonhidrat, yağ değerlerini tahmin et. Türkçe yemekleri iyi tanıyorsun.'
+          'content': systemPrompt
         },
         {
           'role': 'user',
           'content': 'Bu yemek hakkında detaylı besin analizi yap: $description'
         }
       ],
-      'max_tokens': 500,
-      'temperature': 0.3,
+      'max_tokens': 800,
+      'temperature': 0.2,
     });
 
     try {
@@ -347,37 +367,64 @@ class AINutritionService {
         final data = json.decode(response.body);
         final content = data['choices'][0]['message']['content'];
         
-        // AI yanıtını parse edin ve NutritionEstimate döndürün
-        return _parseAIResponse(content, description);
+        return _parseOpenAIResponse(content, description);
+      } else {
+        print('OpenAI API Error: ${response.statusCode} - ${response.body}');
+        return null;
       }
     } catch (e) {
       print('OpenAI API Error: $e');
+      return null;
     }
-    */
-    
-    // Şimdilik mock data döndür
-    return _analyzeWithMockAI(description);
   }
 
   /// Google Gemini ile analiz (gerçek AI)
   Future<NutritionEstimate?> _analyzeWithGemini(String description) async {
-    /*
-    // HTTP paketini uncomment edin ve bu kodu kullanın:
-    
     final headers = {
       'Content-Type': 'application/json',
     };
+
+    final prompt = '''
+Lütfen aşağıdaki yemek açıklamasını analiz et ve besin değerlerini tahmin et. Türkçe yemekleri iyi tanıyorsun.
+
+Yemek açıklaması: "$description"
+
+Lütfen yanıtını tam olarak şu JSON formatında ver:
+{
+  "recognizedFood": "tanınan yemek adı",
+  "description": "yemeğin kısa açıklaması",
+  "ingredients": ["malzeme1", "malzeme2", "malzeme3"],
+  "nutrition": {
+    "calories": sayı,
+    "protein": sayı,
+    "carbs": sayı,
+    "fat": sayı,
+    "fiber": sayı,
+    "sugar": sayı,
+    "sodium": sayı
+  },
+  "confidence": 0.85
+}
+
+Sadece JSON yanıtı ver, başka açıklama ekleme.
+''';
 
     final body = json.encode({
       'contents': [
         {
           'parts': [
             {
-              'text': 'Bu yemek açıklamasını analiz et ve JSON formatında besin değerlerini tahmin et: $description'
+              'text': prompt
             }
           ]
         }
-      ]
+      ],
+      'generationConfig': {
+        'temperature': 0.3,
+        'topK': 40,
+        'topP': 0.95,
+        'maxOutputTokens': 1024,
+      }
     });
 
     try {
@@ -391,15 +438,15 @@ class AINutritionService {
         final data = json.decode(response.body);
         final content = data['candidates'][0]['content']['parts'][0]['text'];
         
-        return _parseAIResponse(content, description);
+        return _parseGeminiResponse(content, description);
+      } else {
+        print('Gemini API Error: ${response.statusCode} - ${response.body}');
+        return null;
       }
     } catch (e) {
       print('Gemini API Error: $e');
+      return null;
     }
-    */
-    
-    // Şimdilik mock data döndür
-    return _analyzeWithMockAI(description);
   }
 
   /// Nutrition API ile analiz (gerçek API)
@@ -539,29 +586,76 @@ class AINutritionService {
     return '$foodName - İçerik: ${ingredients.join(', ')}';
   }
 
-  /// AI yanıtını parse et (gerçek AI kullanırken)
-  NutritionEstimate? _parseAIResponse(String aiResponse, String originalDescription) {
+  /// Gemini AI yanıtını parse et
+  NutritionEstimate? _parseGeminiResponse(String aiResponse, String originalDescription) {
     try {
-      // AI'dan gelen JSON'u parse et
-      final data = json.decode(aiResponse);
+      // JSON'u temizle (markdown formatından kurtul)
+      String cleanedResponse = aiResponse.trim();
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.substring(7);
+      }
+      if (cleanedResponse.endsWith('```')) {
+        cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+      }
+      cleanedResponse = cleanedResponse.trim();
+      
+      final data = json.decode(cleanedResponse);
       
       return NutritionEstimate(
-        recognizedFood: data['food_name'] ?? 'AI Tahmini',
+        recognizedFood: data['recognizedFood'] ?? 'Gemini Tahmini',
         description: data['description'] ?? originalDescription,
         ingredients: List<String>.from(data['ingredients'] ?? []),
         nutrition: NutritionInfo(
-          calories: (data['calories'] ?? 0).toDouble(),
-          protein: (data['protein'] ?? 0).toDouble(),
-          carbs: (data['carbs'] ?? 0).toDouble(),
-          fat: (data['fat'] ?? 0).toDouble(),
-          fiber: (data['fiber'] ?? 0).toDouble(),
-          sugar: (data['sugar'] ?? 0).toDouble(),
-          sodium: (data['sodium'] ?? 0).toDouble(),
+          calories: (data['nutrition']['calories'] ?? 0).toDouble(),
+          protein: (data['nutrition']['protein'] ?? 0).toDouble(),
+          carbs: (data['nutrition']['carbs'] ?? 0).toDouble(),
+          fat: (data['nutrition']['fat'] ?? 0).toDouble(),
+          fiber: (data['nutrition']['fiber'] ?? 0).toDouble(),
+          sugar: (data['nutrition']['sugar'] ?? 0).toDouble(),
+          sodium: (data['nutrition']['sodium'] ?? 0).toDouble(),
         ),
-        confidence: (data['confidence'] ?? 0.5).toDouble(),
+        confidence: (data['confidence'] ?? 0.85).toDouble(),
       );
     } catch (e) {
-      print('AI Response Parse Error: $e');
+      print('Gemini Response Parse Error: $e');
+      print('Raw response: $aiResponse');
+      return null;
+    }
+  }
+
+  /// OpenAI yanıtını parse et
+  NutritionEstimate? _parseOpenAIResponse(String aiResponse, String originalDescription) {
+    try {
+      // JSON'u temizle
+      String cleanedResponse = aiResponse.trim();
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.substring(7);
+      }
+      if (cleanedResponse.endsWith('```')) {
+        cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+      }
+      cleanedResponse = cleanedResponse.trim();
+      
+      final data = json.decode(cleanedResponse);
+      
+      return NutritionEstimate(
+        recognizedFood: data['recognizedFood'] ?? 'OpenAI Tahmini',
+        description: data['description'] ?? originalDescription,
+        ingredients: List<String>.from(data['ingredients'] ?? []),
+        nutrition: NutritionInfo(
+          calories: (data['nutrition']['calories'] ?? 0).toDouble(),
+          protein: (data['nutrition']['protein'] ?? 0).toDouble(),
+          carbs: (data['nutrition']['carbs'] ?? 0).toDouble(),
+          fat: (data['nutrition']['fat'] ?? 0).toDouble(),
+          fiber: (data['nutrition']['fiber'] ?? 0).toDouble(),
+          sugar: (data['nutrition']['sugar'] ?? 0).toDouble(),
+          sodium: (data['nutrition']['sodium'] ?? 0).toDouble(),
+        ),
+        confidence: (data['confidence'] ?? 0.95).toDouble(),
+      );
+    } catch (e) {
+      print('OpenAI Response Parse Error: $e');
+      print('Raw response: $aiResponse');
       return null;
     }
   }
@@ -577,23 +671,293 @@ class AINutritionService {
     return _mealLimits[mealType.toLowerCase()] ?? 500;
   }
 
-  /// Mevcut AI sağlayıcısını al
-  String getCurrentProvider() {
-    return _provider.toString().split('.').last.toUpperCase();
+  /// Kullanılan AI sağlayıcısını al
+  String getCurrentProvider(bool isPremium) {
+    return isPremium ? 'OpenAI GPT-3.5' : 'Google Gemini';
   }
 
   /// AI servis durumunu kontrol et
   bool isUsingRealAI() {
-    return _provider != AIProvider.mock;
+    return true; // Artık her zaman gerçek AI kullanıyoruz
   }
-}
 
-/// AI servis sağlayıcıları
-enum AIProvider {
-  mock,        // Demo için sahte AI
-  openai,      // OpenAI GPT
-  gemini,      // Google Gemini
-  nutritionapi // Nutrition API'ları
+  /// Gemini API ile günlük menü önerileri oluştur
+  Future<List<Map<String, dynamic>>?> generateMenuSuggestions({
+    bool isPremium = false,
+    String? dietaryPreferences,
+    int targetCalories = 2000,
+    List<String>? allergies,
+  }) async {
+    try {
+      if (isPremium) {
+        return await _generateMenuWithOpenAI(
+          dietaryPreferences: dietaryPreferences,
+          targetCalories: targetCalories,
+          allergies: allergies,
+        );
+      } else {
+        return await _generateMenuWithGemini(
+          dietaryPreferences: dietaryPreferences,
+          targetCalories: targetCalories,
+          allergies: allergies,
+        );
+      }
+    } catch (e) {
+      print('Menu Generation Error: $e');
+      return _generateMockMenuSuggestions();
+    }
+  }
+
+  /// Gemini ile menü önerisi oluştur
+  Future<List<Map<String, dynamic>>?> _generateMenuWithGemini({
+    String? dietaryPreferences,
+    int targetCalories = 2000,
+    List<String>? allergies,
+  }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final prompt = '''
+Lütfen günlük beslenme planı için 2 farklı menü önerisi oluştur. Türkçe yemekleri de dahil et.
+
+Parametreler:
+- Hedef kalori: $targetCalories
+- Diyet tercihleri: ${dietaryPreferences ?? 'Yok'}
+- Alerjiler: ${allergies?.join(', ') ?? 'Yok'}
+
+Her menü önerisi için şu JSON formatını kullan:
+[
+  {
+    "title": "Menü başlığı",
+    "description": "Menünün kısa açıklaması",
+    "healthScore": 8.5,
+    "dietaryTags": ["tag1", "tag2", "tag3"],
+    "reasonForSuggestion": "Bu menünün önerilme sebebi",
+    "meals": [
+      {
+        "name": "Yemek adı",
+        "mealType": "breakfast/lunch/dinner/snack",
+        "calories": sayı,
+        "description": "Yemeğin açıklaması",
+        "ingredients": ["malzeme1", "malzeme2", "malzeme3"],
+        "hour": 8,
+        "minute": 0
+      }
+    ]
+  }
+]
+
+2 farklı menü önerisi oluştur. Biri Akdeniz diyeti tarzında, diğeri Türk mutfağı ağırlıklı olsun.
+Sadece JSON array döndür, başka açıklama ekleme.
+''';
+
+    final body = json.encode({
+      'contents': [
+        {
+          'parts': [
+            {
+              'text': prompt
+            }
+          ]
+        }
+      ],
+      'generationConfig': {
+        'temperature': 0.7,
+        'topK': 40,
+        'topP': 0.95,
+        'maxOutputTokens': 2048,
+      }
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$_geminiEndpoint?key=$_geminiApiKey'),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final content = data['candidates'][0]['content']['parts'][0]['text'];
+        
+        return _parseMenuSuggestions(content);
+      } else {
+        print('Gemini Menu API Error: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Gemini Menu API Error: $e');
+      return null;
+    }
+  }
+
+  /// OpenAI ile menü önerisi oluştur (Premium)
+  Future<List<Map<String, dynamic>>?> _generateMenuWithOpenAI({
+    String? dietaryPreferences,
+    int targetCalories = 2000,
+    List<String>? allergies,
+  }) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $_openAIApiKey',
+    };
+
+    final systemPrompt = '''
+Sen bir profesyonel diyetisyensin. Kullanıcı için günlük beslenme planları oluşturuyorsun.
+Türkçe ve uluslararası mutfakları çok iyi biliyorsun.
+Porsiyon büyüklüklerini ve kalori hesaplamalarını doğru yapabiliyorsun.
+''';
+
+    final userPrompt = '''
+Lütfen günlük beslenme planı için 3 farklı menü önerisi oluştur.
+
+Parametreler:
+- Hedef kalori: $targetCalories
+- Diyet tercihleri: ${dietaryPreferences ?? 'Yok'}
+- Alerjiler: ${allergies?.join(', ') ?? 'Yok'}
+
+JSON formatında 3 menü önerisi döndür. Her menü için kahvaltı, öğle, akşam yemeği ve 1 atıştırmalık dahil et.
+Sadece JSON array döndür.
+''';
+
+    final body = json.encode({
+      'model': 'gpt-3.5-turbo',
+      'messages': [
+        {
+          'role': 'system',
+          'content': systemPrompt
+        },
+        {
+          'role': 'user',
+          'content': userPrompt
+        }
+      ],
+      'max_tokens': 2000,
+      'temperature': 0.7,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(_openAIEndpoint),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final content = data['choices'][0]['message']['content'];
+        
+        return _parseMenuSuggestions(content);
+      } else {
+        print('OpenAI Menu API Error: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('OpenAI Menu API Error: $e');
+      return null;
+    }
+  }
+
+  /// Menü önerilerini parse et
+  List<Map<String, dynamic>>? _parseMenuSuggestions(String response) {
+    try {
+      // JSON'u temizle
+      String cleanedResponse = response.trim();
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.substring(7);
+      }
+      if (cleanedResponse.endsWith('```')) {
+        cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+      }
+      cleanedResponse = cleanedResponse.trim();
+      
+      final List<dynamic> data = json.decode(cleanedResponse);
+      return data.cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Menu Parse Error: $e');
+      print('Raw response: $response');
+      return null;
+    }
+  }
+
+  /// Mock menü önerileri (fallback)
+  List<Map<String, dynamic>> _generateMockMenuSuggestions() {
+    return [
+      {
+        "title": "Akdeniz Diyeti Menüsü",
+        "description": "Sağlıklı yağlar, taze sebzeler ve protein açısından zengin",
+        "healthScore": 9.2,
+        "dietaryTags": ["Akdeniz", "Yüksek Protein", "Kalp Dostu"],
+        "reasonForSuggestion": "Dengeli beslenme ve sağlıklı yaşam için ideal",
+        "meals": [
+          {
+            "name": "Meyveli Yulaf Ezmesi",
+            "mealType": "breakfast",
+            "calories": 280,
+            "description": "Yulaf ezmesi üzerine taze meyveler ve bal",
+            "ingredients": ["Yulaf ezmesi", "Yaban mersini", "Çilek", "Bal"],
+            "hour": 8,
+            "minute": 0
+          },
+          {
+            "name": "Akdeniz Kinoa Kasesi",
+            "mealType": "lunch", 
+            "calories": 420,
+            "description": "Kinoa ile ızgara tavuk, sebzeler ve tzatziki",
+            "ingredients": ["Kinoa", "Izgara tavuk", "Salatalık", "Domates", "Tzatziki"],
+            "hour": 12,
+            "minute": 30
+          },
+          {
+            "name": "Sebzeli Izgara Somon",
+            "mealType": "dinner",
+            "calories": 380,
+            "description": "Izgara somon ile közlenmiş Akdeniz sebzeleri",
+            "ingredients": ["Somon", "Kabak", "Biber", "Zeytinyağı"],
+            "hour": 19,
+            "minute": 0
+          }
+        ]
+      },
+      {
+        "title": "Türk Mutfağı Menüsü",
+        "description": "Geleneksel Türk lezzetleri ile sağlıklı beslenme",
+        "healthScore": 8.8,
+        "dietaryTags": ["Türk Mutfağı", "Geleneksel", "Lezzetli"],
+        "reasonForSuggestion": "Türk damak tadına uygun sağlıklı seçenekler",
+        "meals": [
+          {
+            "name": "Peynirli Menemen",
+            "mealType": "breakfast",
+            "calories": 320,
+            "description": "Domates, biber ve peynirle hazırlanan menemen",
+            "ingredients": ["Yumurta", "Domates", "Biber", "Beyaz peynir"],
+            "hour": 8,
+            "minute": 0
+          },
+          {
+            "name": "Mercimek Çorbası ve Salata",
+            "mealType": "lunch",
+            "calories": 380,
+            "description": "Kırmızı mercimek çorbası ile mevsim salatası",
+            "ingredients": ["Kırmızı mercimek", "Soğan", "Havuç", "Yeşillik"],
+            "hour": 12,
+            "minute": 30
+          },
+          {
+            "name": "Izgara Köfte ve Pilav",
+            "mealType": "dinner",
+            "calories": 450,
+            "description": "Izgara köfte ile bulgur pilavı",
+            "ingredients": ["Dana kıyma", "Bulgur", "Soğan", "Maydanoz"],
+            "hour": 19,
+            "minute": 0
+          }
+        ]
+      }
+    ];
+  }
 }
 
 // KULLANIM KLAVUZU:

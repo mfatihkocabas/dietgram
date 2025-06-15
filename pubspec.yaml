@@ -28,6 +28,8 @@ dependencies:
   in_app_purchase: ^3.2.0
   # URL launcher for email and web links
   url_launcher: ^6.2.5
+  # HTTP for API requests
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

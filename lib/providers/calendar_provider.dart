@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import '../models/daily_meal_plan.dart';
 import '../models/meal.dart';
 import '../models/ai_menu_suggestion.dart';
+import '../services/ai_menu_service.dart';
 
 class CalendarProvider with ChangeNotifier {
   DateTime _selectedDay = DateTime.now();
@@ -155,89 +156,134 @@ class CalendarProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void generateAISuggestions() {
-    // Enhanced AI suggestions with better meal distribution
+  final AIMenuService _aiMenuService = AIMenuService();
+
+  Future<void> generateAISuggestions({bool isPremium = false}) async {
+    print('🔄 Starting AI suggestions generation...');
+    
+    try {
+      // AI service'den menü önerileri al
+      final suggestions = await _aiMenuService.generateMenuSuggestions(
+        isPremium: isPremium,
+        targetCalories: 2000,
+        dietaryPreferences: "Dengeli beslenme",
+      );
+
+      if (suggestions != null && suggestions.isNotEmpty) {
+        print('✅ AI suggestions received: ${suggestions.length} menu(s)');
+        _aiSuggestions = suggestions;
+      } else {
+        print('⚠️ No AI suggestions received, using fallback');
+        // Fallback: Mock data kullan
+        _generateMockSuggestions();
+      }
+    } catch (e) {
+      print('❌ AI Suggestions Error: $e');
+      // Hata durumunda mock data kullan
+      _generateMockSuggestions();
+    }
+    
+    print('🔔 Notifying listeners with ${_aiSuggestions.length} suggestions');
+    notifyListeners();
+  }
+
+  /// Cooldown kontrolü
+  bool canRequestNewSuggestions() {
+    return _aiMenuService.canMakeRequest();
+  }
+
+  /// Kalan cooldown süresi
+  int getRemainingCooldown() {
+    return _aiMenuService.getRemainingCooldown();
+  }
+
+  /// AI suggestions'ı temizle
+  void clearAISuggestions() {
+    _aiSuggestions.clear();
+    notifyListeners();
+  }
+
+  void _generateMockSuggestions() {
     _aiSuggestions = [
       AIMenuSuggestion.create(
-        title: "Balanced Mediterranean Day",
-        description: "Rich in healthy fats, lean proteins, and fresh vegetables",
+        title: "Akdeniz Diyeti Menüsü",
+        description: "Sağlıklı yağlar, taze sebzeler ve protein açısından zengin",
         meals: [
           Meal(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            name: "Greek Yogurt with Berries",
+            name: "Meyveli Yulaf Ezmesi",
             mealType: "breakfast",
             calories: 280,
             date: DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day, 8, 0),
             createdAt: DateTime.now(),
-            description: "Greek yogurt topped with mixed berries and honey",
-            ingredients: ["Greek yogurt", "Blueberries", "Strawberries", "Honey"],
+            description: "Yulaf ezmesi üzerine taze meyveler ve bal",
+            ingredients: ["Yulaf ezmesi", "Yaban mersini", "Çilek", "Bal"],
           ),
           Meal(
             id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
-            name: "Mediterranean Quinoa Bowl",
+            name: "Akdeniz Kinoa Kasesi",
             mealType: "lunch",
             calories: 420,
             date: DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day, 12, 30),
             createdAt: DateTime.now(),
-            description: "Quinoa with grilled chicken, vegetables, and tzatziki",
-            ingredients: ["Quinoa", "Grilled chicken", "Cucumber", "Tomato", "Tzatziki"],
+            description: "Kinoa ile ızgara tavuk, sebzeler ve tzatziki",
+            ingredients: ["Kinoa", "Izgara tavuk", "Salatalık", "Domates", "Tzatziki"],
           ),
           Meal(
             id: (DateTime.now().millisecondsSinceEpoch + 2).toString(),
-            name: "Grilled Salmon with Vegetables",
+            name: "Sebzeli Izgara Somon",
             mealType: "dinner",
             calories: 380,
             date: DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day, 19, 0),
             createdAt: DateTime.now(),
-            description: "Grilled salmon with roasted Mediterranean vegetables",
-            ingredients: ["Salmon", "Zucchini", "Bell peppers", "Olive oil"],
+            description: "Izgara somon ile közlenmiş Akdeniz sebzeleri",
+            ingredients: ["Somon", "Kabak", "Biber", "Zeytinyağı"],
           ),
         ],
-        dietaryTags: ["Mediterranean", "High Protein", "Heart Healthy"],
+        dietaryTags: ["Akdeniz", "Yüksek Protein", "Kalp Dostu"],
         healthScore: 9.2,
-        reasonForSuggestion: "Based on your preference for balanced meals with good protein sources",
+        reasonForSuggestion: "Dengeli beslenme ve sağlıklı yaşam için ideal",
       ),
       AIMenuSuggestion.create(
-        title: "Plant-Based Power Day",
-        description: "High in fiber, vitamins, and plant-based proteins",
+        title: "Türk Mutfağı Menüsü",
+        description: "Geleneksel Türk lezzetleri ile sağlıklı beslenme",
         meals: [
           Meal(
             id: (DateTime.now().millisecondsSinceEpoch + 3).toString(),
-            name: "Overnight Oats with Chia",
+            name: "Peynirli Menemen",
             mealType: "breakfast",
             calories: 320,
             date: DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day, 8, 0),
             createdAt: DateTime.now(),
-            description: "Oats soaked with chia seeds, almond milk, and fruit",
-            ingredients: ["Rolled oats", "Chia seeds", "Almond milk", "Banana"],
+            description: "Domates, biber ve peynirle hazırlanan menemen",
+            ingredients: ["Yumurta", "Domates", "Biber", "Beyaz peynir"],
           ),
           Meal(
             id: (DateTime.now().millisecondsSinceEpoch + 4).toString(),
-            name: "Lentil Buddha Bowl",
+            name: "Mercimek Çorbası ve Salata",
             mealType: "lunch",
-            calories: 450,
+            calories: 380,
             date: DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day, 12, 30),
             createdAt: DateTime.now(),
-            description: "Red lentils with roasted vegetables and tahini dressing",
-            ingredients: ["Red lentils", "Sweet potato", "Kale", "Tahini"],
+            description: "Kırmızı mercimek çorbası ile mevsim salatası",
+            ingredients: ["Kırmızı mercimek", "Soğan", "Havuç", "Yeşillik"],
           ),
           Meal(
             id: (DateTime.now().millisecondsSinceEpoch + 5).toString(),
-            name: "Chickpea Curry",
+            name: "Izgara Köfte ve Pilav",
             mealType: "dinner",
-            calories: 380,
+            calories: 450,
             date: DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day, 19, 0),
             createdAt: DateTime.now(),
-            description: "Spiced chickpea curry with brown rice",
-            ingredients: ["Chickpeas", "Coconut milk", "Spinach", "Brown rice"],
+            description: "Izgara köfte ile bulgur pilavı",
+            ingredients: ["Dana kıyma", "Bulgur", "Soğan", "Maydanoz"],
           ),
         ],
-        dietaryTags: ["Vegan", "High Fiber", "Plant-Based"],
+        dietaryTags: ["Türk Mutfağı", "Geleneksel", "Lezzetli"],
         healthScore: 8.8,
-        reasonForSuggestion: "Perfect for increasing your daily fiber and plant nutrients",
+        reasonForSuggestion: "Türk damak tadına uygun sağlıklı seçenekler",
       ),
     ];
-    notifyListeners();
   }
 
   void applyAISuggestion(AIMenuSuggestion suggestion, DateTime date) {
@@ -349,6 +395,6 @@ class CalendarProvider with ChangeNotifier {
       targetCalories: 2000,
     );
 
-    generateAISuggestions();
+    // AI suggestions will be generated when needed
   }
 } 

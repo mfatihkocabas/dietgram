@@ -920,7 +920,10 @@ class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
     });
 
     try {
-      final estimate = await widget.aiService.analyzeFood(_descriptionController.text.trim());
+      final estimate = await widget.aiService.analyzeFood(
+        _descriptionController.text.trim(),
+        isPremium: premiumService.isPremium,
+      );
       
       // Increment AI analysis count for free users
       premiumService.incrementAIAnalysisCount();

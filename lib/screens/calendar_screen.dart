@@ -6,6 +6,7 @@ import '../providers/calendar_provider.dart';
 import '../models/daily_meal_plan.dart';
 import '../models/ai_menu_suggestion.dart';
 import '../utils/app_colors.dart';
+import '../services/premium_service.dart';
 import '../main.dart'; // AuthService için
 
 class CalendarScreen extends StatefulWidget {
@@ -503,48 +504,161 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _showAISuggestions(BuildContext context) {
     final provider = Provider.of<CalendarProvider>(context, listen: false);
+    final premiumService = Provider.of<PremiumService>(context, listen: false);
+    
+    // AI suggestions'ı temizle ve yeni oluştur
+    provider.clearAISuggestions();
+    provider.generateAISuggestions(isPremium: premiumService.isPremium);
     
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_awesome, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    "AI Menu Suggestions",
-                    style: GoogleFonts.epilogue(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.8,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Icon(Icons.auto_awesome, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "AI Menu Suggestions",
+                          style: GoogleFonts.epilogue(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      _buildRefreshButton(provider, premiumService, setState),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: Consumer<CalendarProvider>(
+                    builder: (context, calendarProvider, child) {
+                      return calendarProvider.aiSuggestions.isEmpty
+                          ? _buildLoadingState()
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              itemCount: calendarProvider.aiSuggestions.length,
+                              itemBuilder: (context, index) {
+                                final suggestion = calendarProvider.aiSuggestions[index];
+                                return _buildAISuggestionCard(suggestion, calendarProvider);
+                              },
+                            );
+                    },
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: provider.aiSuggestions.length,
-                itemBuilder: (context, index) {
-                  final suggestion = provider.aiSuggestions[index];
-                  return _buildAISuggestionCard(suggestion, provider);
-                },
-              ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRefreshButton(CalendarProvider provider, PremiumService premiumService, StateSetter setState) {
+    return StreamBuilder<int>(
+      stream: Stream.periodic(const Duration(seconds: 1), (i) => i)
+          .map((_) => provider.getRemainingCooldown()),
+      builder: (context, snapshot) {
+        final canRefresh = provider.canRequestNewSuggestions();
+        final remainingTime = snapshot.data ?? provider.getRemainingCooldown();
+
+        return ElevatedButton.icon(
+                onPressed: canRefresh ? () async {
+        try {
+          provider.clearAISuggestions();
+          await provider.generateAISuggestions(isPremium: premiumService.isPremium);
+          setState(() {}); // UI'ı güncelle
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
             ),
-          ],
-        ),
+          );
+        }
+      } : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: canRefresh ? AppColors.primary : Colors.grey,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          icon: Icon(
+            canRefresh ? Icons.refresh : Icons.timer,
+            size: 16,
+          ),
+          label: Text(
+            canRefresh ? 'Değiştir' : '${remainingTime}s',
+            style: GoogleFonts.epilogue(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.auto_awesome,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(height: 16),
+                CircularProgressIndicator(
+                  color: AppColors.primary,
+                  strokeWidth: 3,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            '🤖 AI menü önerileri hazırlanıyor...',
+            style: GoogleFonts.epilogue(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Size özel beslenme planları oluşturuluyor',
+            style: GoogleFonts.epilogue(
+              fontSize: 14,
+              color: AppColors.textMedium,
+            ),
+          ),
+        ],
       ),
     );
   }
