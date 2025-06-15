@@ -4,15 +4,17 @@
   "appTitle": "Diyetgram - Diyet Takibi",
   
   "onboardingWelcome": "Diyetgram'a Hoş Geldiniz",
-  "onboardingSubtitle": "Daha sağlıklı bir yaşam için AI destekli beslenme yardımcınız",
-  "onboardingGetStarted": "Başlayın",
+  "onboardingSubtitle": "Daha sağlıklı bir yaşam tarzı için AI destekli beslenme yardımcınız",
+  "onboardingGetStarted": "Başlayalım",
   "onboardingSkip": "Geç",
   
   "loginTitle": "Giriş Yap",
   "loginWelcome": "Tekrar Hoş Geldiniz!",
   "loginSubtitle": "Sağlıklı yolculuğunuza devam etmek için giriş yapın",
   "loginEmail": "E-posta Adresi",
+  "loginEmailHint": "ornek@domain.com",
   "loginPassword": "Şifre",
+  "loginPasswordHint": "••••••••",
   "loginSignIn": "Giriş Yap",
   "loginSignUp": "Kayıt Ol",
   "loginForgotPassword": "Şifremi Unuttum?",
@@ -29,13 +31,19 @@
   "signUpButton": "Hesap Oluştur",
   
   "emailRequired": "E-posta gereklidir",
-  "emailInvalid": "Geçerli bir e-posta girin",
+  "emailInvalid": "Geçerli bir e-posta adresi girin",
   "passwordRequired": "Şifre gereklidir",
-  "passwordTooShort": "Şifre en az 6 karakter olmalı",
+  "passwordTooShort": "Şifre en az 6 karakter olmalıdır",
   
   "loginOr": "veya",
   "loginContinueAsGuest": "Misafir olarak devam et",
   "loginGuestSubtitle": "Hesap oluşturmadan uygulamayı deneyimleyin",
+  
+  "resetPasswordTitle": "Şifre Sıfırlama",
+  "resetPasswordDescription": "E-posta adresinizi girin, şifrenizi sıfırlamak için size bir bağlantı gönderelim.",
+  "resetPasswordSuccess": "Şifre sıfırlama e-postası gönderildi! Gelen kutunuzu kontrol edin.",
+  "cancel": "İptal",
+  "sendResetEmail": "Sıfırlama E-postası Gönder",
   
   "dashboardGoodMorning": "Günaydın!",
   "dashboardTrackMeals": "Bugün öğünlerinizi takip edin",
@@ -111,7 +119,7 @@
   "aiSuggestionApplied": "AI önerisi başarıyla uygulandı!",
   
   "calorieWarningTitle": "Kalori Sınırı Uyarısı",
-  "calorieWarningMessage": "Bu öğünü eklemek {mealType} için önerilen kalori sınırını aşacak.",
+  "calorieWarningMessage": "Bu öğünü eklemek {mealType} için önerilen kalori sınırını aşacaktır.",
   "@calorieWarningMessage": {
     "placeholders": {
       "mealType": {
@@ -124,5 +132,23 @@
   
   "settingsLanguage": "Dil",
   "settingsEnglish": "İngilizce",
-  "settingsTurkish": "Türkçe"
+  "settingsTurkish": "Türkçe",
+  
+  "addCustomMeal": "Kendi Öğününü Ekle",
+  "foodDescription": "Yemek Açıklaması",
+  "foodDescriptionHint": "Örnek: Domates biber ile menemen yaptım, 2 yumurta kullandım...",
+  "analyzeWithAI": "AI ile Analiz Et",
+  "analyzingWithAI": "AI Analiz Ediliyor...",
+  "aiAnalysisComplete": "AI analizi tamamlandı!",
+  "aiAnalysisResult": "AI Analiz Sonucu",
+  "analysisRequired": "Önce AI analizi yapın",
+  "mealNameLabel": "Öğün Adı",
+  "mealNameHint": "Öğün için bir isim verin",
+  "addMealToDiary": "Öğünü Günlüğe Ekle",
+  "mealAddedSuccessfully": "Öğün başarıyla eklendi!",
+  "mealAddError": "Öğün eklenirken hata oluştu",
+  "analysisError": "Analiz sırasında hata oluştu",
+  "enterFoodDescription": "Lütfen yemek açıklaması girin",
+  "descriptionRequired": "Açıklama gereklidir",
+  "mealNameRequired": "Öğün adı gereklidir"
 } 

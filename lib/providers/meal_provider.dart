@@ -37,7 +37,7 @@ class MealProvider extends ChangeNotifier {
     return _meals.where((meal) => meal.type.toLowerCase() == type.toLowerCase()).toList();
   }
 
-  void addMeal(Meal meal) {
+  Future<void> addMeal(Meal meal) async {
     _meals.add(meal);
     notifyListeners();
   }

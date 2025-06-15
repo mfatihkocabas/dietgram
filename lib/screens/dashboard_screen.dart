@@ -34,11 +34,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Consumer2<MealProvider, CalendarProvider>(
+        child:         Consumer2<MealProvider, CalendarProvider>(
           builder: (context, mealProvider, calendarProvider, child) {
-            // Get meals for selected day from calendar
-            final selectedDayMeals = calendarProvider.getMealsForSelectedDay();
+            // Get meals for selected day from both providers
             final selectedDate = calendarProvider.selectedDay;
+            final calendarMeals = calendarProvider.getMealsForSelectedDay();
+            final mealProviderMeals = mealProvider.getMealsForDate(selectedDate);
+            
+            // Combine meals from both providers and remove duplicates
+            final allMeals = <Meal>[];
+            final seenIds = <String>{};
+            
+            // Add calendar meals first
+            for (final meal in calendarMeals) {
+              if (meal.id != null && !seenIds.contains(meal.id)) {
+                allMeals.add(meal);
+                seenIds.add(meal.id!);
+              }
+            }
+            
+            // Add meal provider meals if not already present
+            for (final meal in mealProviderMeals) {
+              if (meal.id != null && !seenIds.contains(meal.id)) {
+                allMeals.add(meal);
+                seenIds.add(meal.id!);
+              }
+            }
+            
+            // Sort by timestamp
+            allMeals.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            final selectedDayMeals = allMeals;
             
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
@@ -196,19 +221,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  isToday ? Icons.today : Icons.calendar_today,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
               // Logout button
               GestureDetector(
                 onTap: () => _showLogoutDialog(context),
@@ -227,19 +239,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Colors.red,
                     size: 20,
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  isToday ? Icons.today : Icons.calendar_today,
-                  color: AppColors.primary,
-                  size: 20,
                 ),
               ),
             ],

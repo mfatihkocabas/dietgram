@@ -6,6 +6,8 @@ import '../providers/meal_provider.dart';
 import '../providers/calendar_provider.dart';
 import '../models/meal.dart';
 import '../main.dart'; // AuthService için
+import '../services/ai_nutrition_service.dart';
+import '../services/localization_service.dart';
 
 class AddToDiaryScreen extends StatefulWidget {
   const AddToDiaryScreen({super.key});
@@ -17,6 +19,7 @@ class AddToDiaryScreen extends StatefulWidget {
 class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
   String? selectedMealType;
   DateTime selectedDate = DateTime.now();
+  final AINutritionService _aiService = AINutritionService();
 
   final Map<String, List<Map<String, dynamic>>> mealOptions = {
     'breakfast': [
@@ -177,6 +180,20 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
       body: selectedMealType == null
           ? _buildMealTypeSelection()
           : _buildMealOptionsGrid(),
+      floatingActionButton: selectedMealType != null 
+        ? FloatingActionButton.extended(
+            onPressed: () => _navigateToCustomMeal(),
+            backgroundColor: AppColors.primary,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: Text(
+              'Kendi Öğününü Ekle',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          )
+        : null,
     );
   }
 
@@ -668,6 +685,416 @@ class _AddToDiaryScreenState extends State<AddToDiaryScreen> {
               style: GoogleFonts.epilogue(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToCustomMeal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CustomMealBottomSheet(
+        mealType: selectedMealType!,
+        selectedDate: selectedDate,
+        aiService: _aiService,
+      ),
+    );
+  }
+}
+
+// Custom Meal Bottom Sheet Widget
+class CustomMealBottomSheet extends StatefulWidget {
+  final String mealType;
+  final DateTime selectedDate;
+  final AINutritionService aiService;
+
+  const CustomMealBottomSheet({
+    super.key,
+    required this.mealType,
+    required this.selectedDate,
+    required this.aiService,
+  });
+
+  @override
+  State<CustomMealBottomSheet> createState() => _CustomMealBottomSheetState();
+}
+
+class _CustomMealBottomSheetState extends State<CustomMealBottomSheet> {
+  final _mealNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  
+  bool _isAnalyzing = false;
+  NutritionEstimate? _nutritionEstimate;
+
+  @override
+  void dispose() {
+    _mealNameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _analyzeFood() async {
+    if (_descriptionController.text.trim().isEmpty) {
+      _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('enterFoodDescription'), isError: true);
+      return;
+    }
+
+    setState(() {
+      _isAnalyzing = true;
+      _nutritionEstimate = null;
+    });
+
+    try {
+      final estimate = await widget.aiService.analyzeFood(_descriptionController.text.trim());
+      setState(() {
+        _nutritionEstimate = estimate;
+        if (estimate != null && _mealNameController.text.isEmpty) {
+          _mealNameController.text = estimate.recognizedFood;
+        }
+      });
+      _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('aiAnalysisComplete'), isError: false);
+    } catch (e) {
+      _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('analysisError'), isError: true);
+    } finally {
+      setState(() {
+        _isAnalyzing = false;
+      });
+    }
+  }
+
+  Future<void> _addMeal() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_nutritionEstimate == null) {
+      _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('analysisRequired'), isError: true);
+      return;
+    }
+
+    // Kalori sınırı kontrolü
+    if (widget.aiService.checkMealCalorieLimit(widget.mealType, _nutritionEstimate!.nutrition.calories)) {
+      _showCalorieWarningDialog();
+      return;
+    }
+
+    await _saveMeal();
+  }
+
+  Future<void> _saveMeal() async {
+    final meal = Meal(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _mealNameController.text.trim(),
+      description: _nutritionEstimate!.description,
+      calories: _nutritionEstimate!.nutrition.calories,
+      mealType: widget.mealType,
+      ingredients: _nutritionEstimate!.ingredients,
+      date: widget.selectedDate,
+      createdAt: DateTime.now(),
+      nutritionInfo: _nutritionEstimate!.nutrition.toMap(),
+    );
+
+    try {
+      // Add to both providers
+      await Provider.of<MealProvider>(context, listen: false).addMeal(meal);
+      
+      // Add to calendar provider for the specific date and meal type
+      Provider.of<CalendarProvider>(context, listen: false).addMealToPlan(
+        widget.selectedDate, 
+        widget.mealType, 
+        meal
+      );
+      
+      _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('mealAddedSuccessfully'), isError: false);
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      _showSnackBar(Provider.of<LocalizationService>(context, listen: false).getString('mealAddError'), isError: true);
+    }
+  }
+
+  void _showCalorieWarningDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Kalori Sınırı Uyarısı', style: GoogleFonts.epilogue(fontWeight: FontWeight.bold)),
+        content: Text('Bu öğün ${_getMealTypeName(widget.mealType)} için önerilen kalori sınırını aşıyor.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _saveMeal();
+            },
+            child: const Text('Yine de Ekle'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMealTypeName(String mealType) {
+    switch (mealType) {
+      case 'breakfast': return 'Kahvaltı';
+      case 'lunch': return 'Öğle Yemeği';
+      case 'dinner': return 'Akşam Yemeği';
+      case 'snack': return 'Atıştırmalık';
+      default: return mealType;
+    }
+  }
+
+  void _showSnackBar(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Handle
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Kendi Öğününü Ekle',
+                    style: GoogleFonts.epilogue(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Meal type indicator
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.restaurant, color: AppColors.primary),
+                          const SizedBox(width: 12),
+                          Text(
+                            _getMealTypeName(widget.mealType),
+                            style: GoogleFonts.epilogue(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Description field
+                    Text(
+                      'Yemek Açıklaması',
+                      style: GoogleFonts.epilogue(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Örnek: Domates biber ile menemen yaptım, 2 yumurta kullandım...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) => value?.isEmpty ?? true ? 'Açıklama gereklidir' : null,
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // AI Analysis button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isAnalyzing ? null : _analyzeFood,
+                        icon: _isAnalyzing 
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.psychology, color: Colors.white),
+                        label: Text(
+                          _isAnalyzing ? 'AI Analiz Ediliyor...' : 'AI ile Analiz Et',
+                          style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    if (_nutritionEstimate != null) ...[
+                      const SizedBox(height: 24),
+                      
+                      // Analysis results
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightGray,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.psychology, color: AppColors.primary),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'AI Analiz Sonucu',
+                                  style: GoogleFonts.epilogue(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _nutritionEstimate!.recognizedFood,
+                              style: GoogleFonts.epilogue(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            
+                            // Calorie highlight
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.local_fire_department, color: AppColors.primary),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_nutritionEstimate!.nutrition.calories.round()} Kalori',
+                                    style: GoogleFonts.epilogue(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Meal name field
+                      Text(
+                        'Öğün Adı',
+                        style: GoogleFonts.epilogue(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _mealNameController,
+                        decoration: InputDecoration(
+                          hintText: 'Öğün için bir isim verin',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: (value) => value?.isEmpty ?? true ? 'Öğün adı gereklidir' : null,
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Add button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _addMeal,
+                          icon: const Icon(Icons.add, color: Colors.white),
+                          label: Text(
+                            'Öğünü Günlüğe Ekle',
+                            style: GoogleFonts.epilogue(fontWeight: FontWeight.w600),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 20),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),

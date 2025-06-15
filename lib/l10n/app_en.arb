@@ -12,7 +12,9 @@
   "loginWelcome": "Welcome Back!",
   "loginSubtitle": "Sign in to continue your healthy journey",
   "loginEmail": "Email Address",
+  "loginEmailHint": "example@domain.com",
   "loginPassword": "Password",
+  "loginPasswordHint": "••••••••",
   "loginSignIn": "Sign In",
   "loginSignUp": "Sign Up",
   "loginForgotPassword": "Forgot Password?",
@@ -36,6 +38,12 @@
   "loginOr": "or",
   "loginContinueAsGuest": "Continue as guest",
   "loginGuestSubtitle": "Experience the app without creating an account",
+  
+  "resetPasswordTitle": "Reset Password",
+  "resetPasswordDescription": "Enter your email address and we'll send you a link to reset your password.",
+  "resetPasswordSuccess": "Password reset email sent! Check your inbox.",
+  "cancel": "Cancel",
+  "sendResetEmail": "Send Reset Email",
   
   "dashboardGoodMorning": "Good Morning!",
   "dashboardTrackMeals": "Track your meals today",
@@ -124,5 +132,23 @@
   
   "settingsLanguage": "Language",
   "settingsEnglish": "English",
-  "settingsTurkish": "Turkish"
+  "settingsTurkish": "Turkish",
+  
+  "addCustomMeal": "Add Your Own Meal",
+  "foodDescription": "Food Description",
+  "foodDescriptionHint": "Example: I made scrambled eggs with tomatoes and peppers, used 2 eggs...",
+  "analyzeWithAI": "Analyze with AI",
+  "analyzingWithAI": "AI Analyzing...",
+  "aiAnalysisComplete": "AI analysis completed!",
+  "aiAnalysisResult": "AI Analysis Result",
+  "analysisRequired": "Please analyze with AI first",
+  "mealNameLabel": "Meal Name",
+  "mealNameHint": "Give a name for your meal",
+  "addMealToDiary": "Add Meal to Diary",
+  "mealAddedSuccessfully": "Meal added successfully!",
+  "mealAddError": "Error adding meal",
+  "analysisError": "Error during analysis",
+  "enterFoodDescription": "Please enter food description",
+  "descriptionRequired": "Description is required",
+  "mealNameRequired": "Meal name is required"
 } 

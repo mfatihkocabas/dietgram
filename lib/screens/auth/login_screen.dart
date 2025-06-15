@@ -295,7 +295,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Türkçe',
+                    localization.getString('settingsTurkish'),
                     style: GoogleFonts.epilogue(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -316,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'English',
+                    localization.getString('settingsEnglish'),
                     style: GoogleFonts.epilogue(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
