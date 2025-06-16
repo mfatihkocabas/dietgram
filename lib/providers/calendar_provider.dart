@@ -4,6 +4,7 @@ import '../models/daily_meal_plan.dart';
 import '../models/meal.dart';
 import '../models/ai_menu_suggestion.dart';
 import '../services/ai_menu_service.dart';
+import '../services/user_data_service.dart';
 
 class CalendarProvider with ChangeNotifier {
   DateTime _selectedDay = DateTime.now();
@@ -75,6 +76,10 @@ class CalendarProvider with ChangeNotifier {
   void selectDay(DateTime selectedDay, DateTime focusedDay) {
     _selectedDay = selectedDay;
     _focusedDay = focusedDay;
+    
+    // Seçilen gün için verileri Firebase'den yükle
+    loadDailyMealsFromFirebase(selectedDay);
+    
     notifyListeners();
   }
 
@@ -112,6 +117,9 @@ class CalendarProvider with ChangeNotifier {
         _mealPlans[dateKey] = existingPlan.copyWith(snacks: updatedMeals);
         break;
     }
+    
+    // Firebase'e kaydet
+    _saveDailyMealsToFirebase(dateKey);
     notifyListeners();
   }
 
@@ -139,6 +147,9 @@ class CalendarProvider with ChangeNotifier {
         _mealPlans[dateKey] = existingPlan.copyWith(snacks: updatedMeals);
         break;
     }
+    
+    // Firebase'e kaydet
+    _saveDailyMealsToFirebase(dateKey);
     notifyListeners();
   }
 
@@ -172,6 +183,11 @@ class CalendarProvider with ChangeNotifier {
       if (suggestions != null && suggestions.isNotEmpty) {
         print('✅ AI suggestions received: ${suggestions.length} menu(s)');
         _aiSuggestions = suggestions;
+        
+        // AI önerilerini Firebase'e kaydet
+        for (final suggestion in suggestions) {
+          await saveAIMenuSuggestion(suggestion, _selectedDay);
+        }
       } else {
         print('⚠️ No AI suggestions received, using fallback');
         // Fallback: Mock data kullan
@@ -396,5 +412,153 @@ class CalendarProvider with ChangeNotifier {
     );
 
     // AI suggestions will be generated when needed
+  }
+
+  // Firebase veri kaydetme metodları
+  Future<void> _saveDailyMealsToFirebase(DateTime date) async {
+    try {
+      final plan = _mealPlans[date];
+      if (plan == null) return;
+
+      final meals = <Map<String, dynamic>>[];
+      
+      // Tüm yemekleri topla
+      for (final meal in plan.breakfast) {
+        meals.add(_mealToMap(meal));
+      }
+      for (final meal in plan.lunch) {
+        meals.add(_mealToMap(meal));
+      }
+      for (final meal in plan.dinner) {
+        meals.add(_mealToMap(meal));
+      }
+      for (final meal in plan.snacks) {
+        meals.add(_mealToMap(meal));
+      }
+
+      // Makro besinleri hesapla
+      final macros = _calculateMacros(meals);
+
+      // Firebase'e kaydet
+      await UserDataService.saveDailyMeals(
+        date: date,
+        meals: meals,
+        totalCalories: plan.totalCalories.round(),
+        macros: macros,
+      );
+      
+      print('✅ Daily meals saved to Firebase for ${date.toString().split(' ')[0]}');
+    } catch (e) {
+      print('❌ Error saving daily meals to Firebase: $e');
+    }
+  }
+
+  Map<String, dynamic> _mealToMap(Meal meal) {
+    return {
+      'id': meal.id,
+      'name': meal.name,
+      'mealType': meal.mealType,
+      'calories': meal.calories,
+      'description': meal.description,
+      'ingredients': meal.ingredients,
+      'timestamp': meal.timestamp.toIso8601String(),
+      'createdAt': meal.createdAt.toIso8601String(),
+    };
+  }
+
+  Map<String, double> _calculateMacros(List<Map<String, dynamic>> meals) {
+    // Basit makro hesaplama (gerçek uygulamada daha detaylı olabilir)
+    double totalCalories = meals.fold(0.0, (sum, meal) => sum + (meal['calories'] ?? 0));
+    
+    return {
+      'protein': totalCalories * 0.25 / 4, // %25 protein (4 cal/g)
+      'carbs': totalCalories * 0.45 / 4,   // %45 karbonhidrat (4 cal/g)
+      'fat': totalCalories * 0.30 / 9,     // %30 yağ (9 cal/g)
+    };
+  }
+
+  // AI menü önerisini Firebase'e kaydet
+  Future<void> saveAIMenuSuggestion(AIMenuSuggestion suggestion, DateTime date) async {
+    try {
+      final menuData = {
+        'title': suggestion.title,
+        'description': suggestion.description,
+        'healthScore': suggestion.healthScore,
+        'dietaryTags': suggestion.dietaryTags,
+        'reasonForSuggestion': suggestion.reasonForSuggestion,
+        'meals': suggestion.meals.map((meal) => _mealToMap(meal)).toList(),
+      };
+
+      await UserDataService.saveAIMenuSuggestion(
+        date: date,
+        menuData: menuData,
+      );
+      
+      print('✅ AI menu suggestion saved to Firebase');
+    } catch (e) {
+      print('❌ Error saving AI menu suggestion: $e');
+    }
+  }
+
+  // Firebase'den günlük yemekleri yükle
+  Future<void> loadDailyMealsFromFirebase(DateTime date) async {
+    try {
+      final data = await UserDataService.getDailyMeals(date);
+      
+      if (data != null) {
+        final dateKey = DateTime(date.year, date.month, date.day);
+        final meals = (data['meals'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+        
+        final breakfast = <Meal>[];
+        final lunch = <Meal>[];
+        final dinner = <Meal>[];
+        final snacks = <Meal>[];
+
+        for (final mealData in meals) {
+          final meal = _mealFromMap(mealData);
+          switch (meal.mealType.toLowerCase()) {
+            case 'breakfast':
+              breakfast.add(meal);
+              break;
+            case 'lunch':
+              lunch.add(meal);
+              break;
+            case 'dinner':
+              dinner.add(meal);
+              break;
+            case 'snack':
+              snacks.add(meal);
+              break;
+          }
+        }
+
+        _mealPlans[dateKey] = DailyMealPlan(
+          date: dateKey,
+          breakfast: breakfast,
+          lunch: lunch,
+          dinner: dinner,
+          snacks: snacks,
+          targetCalories: 2000, // Default değer
+        );
+
+        notifyListeners();
+        print('✅ Daily meals loaded from Firebase for ${date.toString().split(' ')[0]}');
+      }
+    } catch (e) {
+      print('❌ Error loading daily meals from Firebase: $e');
+    }
+  }
+
+  Meal _mealFromMap(Map<String, dynamic> data) {
+    return Meal(
+      id: data['id'] ?? '',
+      name: data['name'] ?? '',
+      mealType: data['mealType'] ?? '',
+      calories: (data['calories'] ?? 0).toDouble(),
+      description: data['description'] ?? '',
+      ingredients: (data['ingredients'] as List<dynamic>?)?.cast<String>() ?? [],
+      date: DateTime.parse(data['timestamp'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(data['createdAt'] ?? DateTime.now().toIso8601String()),
+    );
   }
 } 

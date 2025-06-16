@@ -4,13 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// TODO: Re-enable Firebase when it's properly configured
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'services/localization_service.dart';
 import 'services/ad_service.dart';
 import 'services/premium_service.dart';
+import 'services/local_data_service.dart';
 import 'providers/meal_provider.dart';
 import 'providers/calendar_provider.dart';
 import 'screens/auth/login_screen.dart';
@@ -26,19 +26,22 @@ import 'utils/app_colors.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // TODO: Re-enable Firebase initialization
-  // try {
-  //   // Initialize Firebase
-  //   await Firebase.initializeApp(
-  //     options: DefaultFirebaseOptions.currentPlatform,
-  //   );
-  // } catch (e) {
-  //   print('Firebase initialization error: $e');
-  //   // Continue without Firebase for development
-  // }
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('❌ Firebase initialization error: $e');
+    // Continue without Firebase for development
+  }
   
   // Initialize Hive for caching
   await Hive.initFlutter();
+  
+  // Initialize Local Data Service (for caching)
+  await LocalDataService.initialize();
   
   // Initialize AdMob
   await AdService.initialize();
@@ -138,108 +141,125 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Mock Authentication service (temporary - will be replaced with Firebase)
+// Firebase Authentication service
 class AuthService extends ChangeNotifier {
-  bool _isLoggedIn = false;
-  String? _userEmail;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _user;
   bool _isInitialized = false;
 
-  bool get isLoggedIn => _isLoggedIn;
-  String? get userEmail => _userEmail;
+  User? get user => _user;
+  bool get isLoggedIn => _user != null;
+  String? get userEmail => _user?.email;
   bool get isInitialized => _isInitialized;
 
-  // Initialize auth state from SharedPreferences
+  // Initialize auth state listener
   Future<void> initialize() async {
-    final prefs = await SharedPreferences.getInstance();
-    _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    _userEmail = prefs.getString('userEmail');
+    _auth.authStateChanges().listen((User? user) {
+      _user = user;
+      notifyListeners();
+    });
+    _user = _auth.currentUser;
     _isInitialized = true;
     notifyListeners();
   }
 
   Future<void> signIn(String email, String password) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1000));
-    
-    // Mock validation
-    if (email.isEmpty || password.isEmpty) {
-      throw Exception('Please fill all fields');
+    try {
+      if (email.isEmpty || password.isEmpty) {
+        throw Exception('Please fill all fields');
+      }
+      
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+        throw Exception('Please enter a valid email address');
+      }
+      
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          throw Exception('No user found for that email.');
+        case 'wrong-password':
+          throw Exception('Wrong password provided.');
+        case 'invalid-email':
+          throw Exception('Invalid email address.');
+        case 'user-disabled':
+          throw Exception('This account has been disabled.');
+        default:
+          throw Exception('Login failed: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Login failed: $e');
     }
-    
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      throw Exception('Please enter a valid email address');
-    }
-    
-    if (password.length < 6) {
-      throw Exception('Password must be at least 6 characters');
-    }
-    
-    _isLoggedIn = true;
-    _userEmail = email;
-    
-    // Save to SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
-    await prefs.setString('userEmail', email);
-    
-    notifyListeners();
   }
 
   Future<void> signUp(String email, String password) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1200));
-    
-    // Mock validation
-    if (email.isEmpty || password.isEmpty) {
-      throw Exception('Please fill all fields');
+    try {
+      if (email.isEmpty || password.isEmpty) {
+        throw Exception('Please fill all fields');
+      }
+      
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+        throw Exception('Please enter a valid email address');
+      }
+      
+      if (password.length < 6) {
+        throw Exception('Password must be at least 6 characters');
+      }
+      
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'weak-password':
+          throw Exception('The password provided is too weak.');
+        case 'email-already-in-use':
+          throw Exception('The account already exists for that email.');
+        case 'invalid-email':
+          throw Exception('Invalid email address.');
+        default:
+          throw Exception('Registration failed: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Registration failed: $e');
     }
-    
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      throw Exception('Please enter a valid email address');
-    }
-    
-    if (password.length < 6) {
-      throw Exception('Password must be at least 6 characters');
-    }
-    
-    // Simulate account creation
-    _isLoggedIn = true;
-    _userEmail = email;
-    
-    // Save to SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
-    await prefs.setString('userEmail', email);
-    
-    notifyListeners();
   }
 
   Future<void> signOut() async {
-    _isLoggedIn = false;
-    _userEmail = null;
-    
-    // Clear SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
-    await prefs.remove('userEmail');
-    
-    notifyListeners();
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      throw Exception('Sign out failed: $e');
+    }
   }
 
   Future<void> resetPassword(String email) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    if (email.isEmpty) {
-      throw Exception('Please enter your email address');
+    try {
+      if (email.isEmpty) {
+        throw Exception('Please enter your email address');
+      }
+      
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+        throw Exception('Please enter a valid email address');
+      }
+      
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          throw Exception('No user found for that email.');
+        case 'invalid-email':
+          throw Exception('Invalid email address.');
+        default:
+          throw Exception('Password reset failed: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Password reset failed: $e');
     }
-    
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      throw Exception('Please enter a valid email address');
-    }
-    
-    // Simulate password reset email sent
-    // In real implementation, Firebase would send the email
   }
 }
 

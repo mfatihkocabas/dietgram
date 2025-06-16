@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "779288011889",
+    "project_id": "dietgram-fe976",
+    "storage_bucket": "dietgram-fe976.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779288011889:android:8b8b8b8b8b8b8b8bc4a7d0",
+        "android_client_info": {
+          "package_name": "com.example.dietgram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "779288011889-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYt2Y_APIetQ7tMBOI-_860KIQ_xAyuhI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779288011889-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+} 
